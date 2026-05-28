@@ -1,560 +1,835 @@
-
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="硬幣">
+<meta name="theme-color" content="#c8870a">
+<title>硬幣點擊遊戲</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="icon" type="image/png" href="icons/icon-32.png">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=DotGothic16&display=swap" rel="stylesheet">
 <style>
-*{box-sizing:border-box;margin:0;padding:0;}
-#game{padding:1rem 0;user-select:none;}
-.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:1rem;}
-.stat{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:10px 8px;text-align:center;}
-.stat-label{font-size:12px;color:var(--color-text-secondary);margin-bottom:3px;}
-.stat-value{font-size:18px;font-weight:500;color:var(--color-text-primary);}
-.top-bar{display:flex;align-items:center;justify-content:flex-end;margin-bottom:0.75rem;gap:6px;}
-.lang-btn{padding:5px 12px;font-size:12px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);cursor:pointer;background:none;color:var(--color-text-secondary);}
-.lang-btn.active{background:var(--color-background-secondary);color:var(--color-text-primary);font-weight:500;}
-.tabs{display:flex;gap:6px;margin-bottom:1rem;flex-wrap:wrap;}
-.tab{padding:7px 14px;font-size:13px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);cursor:pointer;background:none;color:var(--color-text-secondary);}
-.tab.active{background:var(--color-background-secondary);color:var(--color-text-primary);font-weight:500;}
-.panel{display:none;}.panel.show{display:block;}
-#coin-btn{width:130px;height:130px;border-radius:50%;background:#FAC775;border:4px solid #EF9F27;font-size:50px;cursor:pointer;transition:transform .08s,box-shadow .08s;box-shadow:0 5px 0 #BA7517;display:inline-flex;align-items:center;justify-content:center;}
-#coin-btn:active{transform:scale(0.92) translateY(4px);box-shadow:0 1px 0 #BA7517;}
-#coin-btn:hover{transform:scale(1.05);}
-.float-text{position:fixed;pointer-events:none;font-weight:500;font-size:17px;color:#27500A;animation:floatUp .9s ease-out forwards;z-index:999;}
-@keyframes floatUp{0%{opacity:1;transform:translateY(0);}100%{opacity:0;transform:translateY(-75px);}}
-#jackpot-banner{background:var(--color-background-warning);color:var(--color-text-warning);border-radius:var(--border-radius-md);padding:8px 14px;font-weight:500;font-size:14px;margin-bottom:10px;display:none;text-align:center;}
-.history{max-height:180px;overflow-y:auto;}
-.history-item{display:flex;justify-content:space-between;align-items:center;padding:7px 12px;font-size:13px;border-bottom:0.5px solid var(--color-border-tertiary);color:var(--color-text-secondary);}
-.history-item .amt{font-weight:500;color:var(--color-text-primary);}
-.history-item .amt.big{color:#27500A;}
-.history-item .amt.jackpot{color:#D85A30;font-size:15px;}
-#reset-btn{font-size:12px;color:var(--color-text-tertiary);background:none;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:5px 12px;cursor:pointer;margin-top:10px;}
-.exchange-card{background:var(--color-background-secondary);border-radius:var(--border-radius-lg);padding:14px 16px;margin-top:1rem;}
-.ex-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
-.ex-label{font-size:13px;font-weight:500;color:var(--color-text-secondary);}
-.ex-toggle{display:flex;}
-.ex-toggle button{padding:5px 13px;font-size:12px;border:0.5px solid var(--color-border-secondary);cursor:pointer;background:none;color:var(--color-text-secondary);}
-.ex-toggle button:first-child{border-radius:var(--border-radius-md) 0 0 var(--border-radius-md);}
-.ex-toggle button:last-child{border-radius:0 var(--border-radius-md) var(--border-radius-md) 0;border-left:none;}
-.ex-toggle button.active{background:var(--color-background-primary);color:var(--color-text-primary);font-weight:500;}
-.ex-body{display:flex;align-items:center;gap:12px;}
-.ex-flag{font-size:28px;}
-.ex-right{flex:1;}
-.ex-amount{font-size:26px;font-weight:500;color:var(--color-text-primary);}
-.ex-sub{font-size:11px;color:var(--color-text-secondary);margin-top:3px;}
-.afk-card{background:var(--color-background-secondary);border-radius:var(--border-radius-lg);padding:14px 16px;margin-bottom:1rem;}
-.afk-title{font-size:14px;font-weight:500;color:var(--color-text-primary);margin-bottom:10px;}
-.duration-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px;}
-.dur-btn{padding:10px 8px;font-size:13px;font-weight:500;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);cursor:pointer;background:var(--color-background-primary);color:var(--color-text-primary);text-align:center;}
-.dur-btn.selected{border-color:#185FA5;background:var(--color-background-info);color:var(--color-text-info);}
-.dur-sub{font-size:11px;font-weight:400;color:var(--color-text-secondary);margin-top:2px;}
-.dur-btn.selected .dur-sub{color:var(--color-text-info);opacity:0.8;}
-.custom-row{display:flex;align-items:center;gap:10px;margin-bottom:12px;font-size:13px;color:var(--color-text-secondary);}
-.custom-row input{flex:1;}
-#afk-start-btn{width:100%;padding:10px;font-size:14px;font-weight:500;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);cursor:pointer;background:var(--color-background-primary);color:var(--color-text-primary);}
-#afk-start-btn.running{border-color:#A32D2D;color:var(--color-text-danger);}
-.afk-progress-wrap{margin-top:12px;}
-.afk-progress-label{display:flex;justify-content:space-between;font-size:12px;color:var(--color-text-secondary);margin-bottom:5px;}
-.progress-track{background:var(--color-background-tertiary);border-radius:4px;height:8px;overflow:hidden;}
-.progress-fill{height:8px;border-radius:4px;background:#185FA5;transition:width .5s;}
-.afk-result{background:var(--color-background-success);border-radius:var(--border-radius-md);padding:10px 14px;margin-top:10px;font-size:13px;color:var(--color-text-success);}
-.afk-log{max-height:120px;overflow-y:auto;margin-top:8px;}
-.afk-log-item{font-size:12px;color:var(--color-text-secondary);padding:3px 0;border-bottom:0.5px solid var(--color-border-tertiary);}
-.ach-filters{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;}
-.ach-filter{padding:4px 10px;font-size:12px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);cursor:pointer;background:none;color:var(--color-text-secondary);}
-.ach-filter.active{background:var(--color-background-secondary);color:var(--color-text-primary);}
-.ach-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;max-height:340px;overflow-y:auto;}
-.ach-item{border-radius:var(--border-radius-md);padding:8px 10px;border:0.5px solid var(--color-border-tertiary);background:var(--color-background-primary);}
-.ach-item.unlocked{background:var(--color-background-secondary);}
-.ach-item.locked{opacity:0.4;}
-.ach-icon{font-size:20px;margin-bottom:3px;}
-.ach-name{font-size:12px;font-weight:500;color:var(--color-text-primary);}
-.ach-desc{font-size:11px;color:var(--color-text-secondary);margin-top:2px;}
-.ach-badge{display:inline-block;font-size:10px;padding:1px 6px;border-radius:var(--border-radius-md);margin-top:4px;}
-.bclick{background:#E6F1FB;color:#0C447C;}.bmoney{background:#EAF3DE;color:#27500A;}.bjackpot{background:#FAECE7;color:#712B13;}.bstreak{background:#FBEAF0;color:#72243E;}.bspecial{background:#EEEDFE;color:#3C3489;}.bcombo{background:#FAEEDA;color:#633806;}.bafk{background:#E1F5EE;color:#085041;}
-.new-ach-toast{position:fixed;bottom:20px;right:20px;background:var(--color-background-primary);border:0.5px solid var(--color-border-success);border-radius:var(--border-radius-lg);padding:10px 14px;font-size:13px;color:var(--color-text-success);z-index:9999;animation:slideIn .3s ease;max-width:240px;}
-@keyframes slideIn{from{opacity:0;transform:translateX(30px);}to{opacity:1;transform:translateX(0);}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0;}
+:root{
+  --bg:#0e0900;--bg2:#1a1108;--bg3:#241810;
+  --gold:#e8a020;--gold2:#f5c842;--gold3:#ffd96a;
+  --text:#f0d88a;--text2:#b89040;--text3:#7a5c20;
+  --green:#2a7a3a;--green2:#3aaa50;--green3:#60cc70;
+  --red:#8a2020;--red2:#cc3030;
+  --border:#3a2808;--border2:#5a3c10;
+  --panel:#1a1108;
+  --safe-top:env(safe-area-inset-top,0px);
+  --safe-bot:env(safe-area-inset-bottom,0px);
+}
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-serif;}
+body{display:flex;flex-direction:column;height:100dvh;}
+
+/* PIXEL SCANLINE BG */
+body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,.15) 3px,rgba(0,0,0,.15) 4px);pointer-events:none;z-index:0;}
+
+#app{display:flex;flex-direction:column;height:100%;padding-top:var(--safe-top);padding-bottom:var(--safe-bot);position:relative;z-index:1;}
+
+/* TOP BAR */
+.topbar{background:var(--bg2);border-bottom:2px solid var(--border2);padding:8px 12px 6px;flex-shrink:0;}
+.stat-row{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;}
+.stat-box{background:var(--bg3);border:1px solid var(--border2);border-radius:4px;padding:5px 4px;text-align:center;}
+.stat-label{font-size:13px;color:var(--text3);letter-spacing:.5px;font-family:'DotGothic16',monospace;}
+.stat-val{font-size:18px;font-weight:700;color:var(--gold2);font-family:'DotGothic16',monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.stat-val.twd{color:var(--green3);}
+
+/* TABS */
+.tabs{display:flex;background:var(--bg2);border-bottom:2px solid var(--border2);flex-shrink:0;overflow-x:auto;scrollbar-width:none;}
+.tabs::-webkit-scrollbar{display:none;}
+.tab{flex:1;min-width:60px;padding:12px 4px;font-size:17px;text-align:center;cursor:pointer;color:var(--text3);font-family:'DotGothic16',monospace;border:none;background:none;border-bottom:2px solid transparent;transition:all .15s;-webkit-tap-highlight-color:transparent;}
+.tab.active{color:var(--gold2);border-bottom-color:var(--gold);}
+
+/* PANELS */
+.panels{flex:1;overflow:hidden;position:relative;}
+.panel{position:absolute;inset:0;overflow-y:auto;display:none;padding:12px;}
+.panel.show{display:block;}
+.panel::-webkit-scrollbar{width:3px;}
+.panel::-webkit-scrollbar-thumb{background:var(--border2);}
+
+/* GAME PANEL */
+#panel-game{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:16px 12px;}
+#panel-game.show{display:flex;}
+
+#jackpot-banner{background:var(--gold);color:#1a0900;font-family:'DotGothic16',monospace;font-size:17px;font-weight:700;padding:6px 20px;border-radius:4px;margin-bottom:8px;display:none;animation:flashIn .3s ease;}
+@keyframes flashIn{0%{transform:scale(.8);opacity:0;}60%{transform:scale(1.1);}100%{transform:scale(1);opacity:1;}}
+
+.coin-wrap{position:relative;margin:8px 0 4px;}
+#coin-btn{
+  width:140px;height:140px;border-radius:50%;
+  background:radial-gradient(circle at 38% 35%, #ffe88a, #e8a020 55%, #8a5008);
+  border:4px solid #7a4005;
+  font-size:0;
+  cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+  box-shadow:0 6px 0 #3a2000, 0 8px 16px rgba(0,0,0,.6);
+  transition:transform .06s,box-shadow .06s;
+  display:flex;align-items:center;justify-content:center;
+  position:relative;overflow:hidden;
+}
+#coin-btn:active{transform:scale(.92) translateY(5px);box-shadow:0 1px 0 #3a2000,0 2px 8px rgba(0,0,0,.6);}
+#coin-btn canvas{width:110px;height:110px;}
+.coin-ring{position:absolute;inset:-6px;border-radius:50%;border:2px solid rgba(255,220,80,.3);pointer-events:none;}
+
+.combo-bar{height:18px;font-family:'DotGothic16',monospace;font-size:15px;color:var(--gold3);text-align:center;margin:2px 0;}
+.tap-hint{font-size:14px;color:var(--text3);font-family:'DotGothic16',monospace;text-align:center;margin-bottom:8px;}
+
+.mini-history{width:100%;max-width:320px;margin-top:8px;}
+.mini-hist-item{display:flex;justify-content:space-between;font-size:15px;font-family:'DotGothic16',monospace;padding:3px 8px;border-bottom:1px solid var(--border);color:var(--text2);}
+.mini-hist-item .mh-amt{font-weight:700;}
+.mini-hist-item .mh-amt.big{color:var(--gold2);}
+.mini-hist-item .mh-amt.jp{color:#ff9944;}
+
+#reset-btn{margin-top:auto;font-size:17px;color:var(--text3);background:none;border:1px solid var(--border2);border-radius:4px;padding:6px 14px;cursor:pointer;font-family:'DotGothic16',monospace;}
+
+/* FLOAT TEXT */
+.float-txt{position:fixed;pointer-events:none;font-family:'DotGothic16',monospace;font-weight:700;font-size:26px;color:var(--gold3);z-index:999;animation:floatUp .85s ease-out forwards;text-shadow:0 1px 4px rgba(0,0,0,.8);}
+@keyframes floatUp{0%{opacity:1;transform:translateY(0);}100%{opacity:0;transform:translateY(-80px);}}
+
+/* AFK PANEL */
+.card{background:var(--bg2);border:1px solid var(--border2);border-radius:6px;padding:14px;margin-bottom:12px;}
+.card-title{font-family:'DotGothic16',monospace;font-size:17px;color:var(--gold2);margin-bottom:12px;}
+.dur-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px;}
+.dur-btn{background:var(--bg3);border:1px solid var(--border2);border-radius:4px;padding:12px 4px;text-align:center;cursor:pointer;color:var(--text2);font-family:'DotGothic16',monospace;font-size:19px;transition:all .15s;}
+.dur-btn .dsub{font-size:13px;color:var(--text3);margin-top:2px;}
+.dur-btn.sel{background:#3a2808;border-color:var(--gold);color:var(--gold2);}
+.dur-btn.sel .dsub{color:var(--text2);}
+.custom-row{display:flex;align-items:center;gap:10px;padding:8px;background:var(--bg3);border-radius:4px;margin-bottom:12px;}
+.custom-row label{font-size:14px;color:var(--text3);font-family:'DotGothic16',monospace;white-space:nowrap;}
+.custom-row input[type=range]{flex:1;accent-color:var(--gold);}
+.custom-row span{font-size:17px;font-family:'DotGothic16',monospace;color:var(--text);min-width:50px;text-align:right;}
+.afk-btn{width:100%;padding:12px;font-size:17px;font-family:'DotGothic16',monospace;border-radius:4px;cursor:pointer;border:2px solid var(--border2);background:var(--bg3);color:var(--text);transition:all .15s;}
+.afk-btn.running{background:var(--red);border-color:var(--red2);color:#fff;}
+.prog-bg{background:var(--bg3);border:1px solid var(--border2);border-radius:20px;height:12px;overflow:hidden;margin:8px 0;}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold3));transition:width .5s linear;width:0%;}
+.afk-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px;}
+.afk-st{background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:7px;text-align:center;}
+.afk-st-l{font-size:13px;color:var(--text3);font-family:'DotGothic16',monospace;}
+.afk-st-v{font-size:17px;font-weight:700;color:var(--gold2);font-family:'DotGothic16',monospace;margin-top:2px;}
+.afk-log{max-height:120px;overflow-y:auto;margin-top:8px;border-top:1px solid var(--border);}
+.afk-log-row{display:flex;justify-content:space-between;font-size:14px;font-family:'DotGothic16',monospace;padding:3px 0;color:var(--text3);}
+.afk-log-row .la{color:var(--text);font-weight:700;}
+.afk-log-row .la.big{color:var(--gold2);}
+.afk-log-row .la.jp{color:#ff9944;}
+.result-card{background:#0a2010;border:1px solid var(--green2);border-radius:6px;padding:12px;margin-top:10px;display:none;}
+.result-title{font-family:'DotGothic16',monospace;font-size:19px;color:var(--green3);margin-bottom:8px;}
+.result-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;}
+.result-stat .rv{font-size:19px;font-weight:700;color:var(--green3);font-family:'DotGothic16',monospace;text-align:center;}
+.result-stat .rl{font-size:13px;color:var(--text3);font-family:'DotGothic16',monospace;text-align:center;margin-top:2px;}
+
+/* EXCHANGE */
+.rate-tag{display:inline-block;background:#2a1a00;border:1px solid var(--gold);border-radius:20px;padding:4px 10px;font-size:17px;color:var(--gold2);font-family:'DotGothic16',monospace;margin-bottom:10px;}
+.twd-banner{display:flex;justify-content:space-between;align-items:center;background:#0a2010;border:1px solid var(--green2);border-radius:4px;padding:10px 12px;margin-bottom:10px;}
+.twd-banner .tl{font-size:15px;color:var(--green3);font-family:'DotGothic16',monospace;}
+.twd-banner .tv{font-size:26px;font-weight:700;color:var(--green3);font-family:'DotGothic16',monospace;}
+.ex-balrow{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;}
+.ex-bal{background:var(--bg3);border:1px solid var(--border2);border-radius:4px;padding:10px;}
+.ex-bal-l{font-size:13px;color:var(--text3);font-family:'DotGothic16',monospace;}
+.ex-bal-v{font-size:19px;font-weight:700;color:var(--gold2);font-family:'DotGothic16',monospace;margin-top:3px;}
+.ex-bal-v.tw{color:var(--green3);}
+.ex-inp-row{display:flex;gap:8px;margin-bottom:8px;}
+.ex-inp-row input{flex:1;background:var(--bg3);border:1px solid var(--border2);border-radius:4px;padding:10px 10px;font-size:17px;color:var(--text);font-family:'DotGothic16',monospace;}
+.ex-inp-row input:focus{outline:none;border-color:var(--gold);}
+.ex-max-btn{background:var(--bg3);border:1px solid var(--border2);border-radius:4px;padding:10px 12px;font-size:15px;color:var(--text2);font-family:'DotGothic16',monospace;cursor:pointer;}
+.ex-preview{font-size:14px;color:var(--text3);font-family:'DotGothic16',monospace;min-height:16px;margin-bottom:10px;}
+.ex-preview span{color:var(--green3);}
+.ex-do-btn{width:100%;padding:12px;font-size:17px;font-family:'DotGothic16',monospace;border-radius:4px;cursor:pointer;border:2px solid var(--green2);background:#0a2010;color:var(--green3);transition:all .15s;}
+.ex-do-btn:disabled{opacity:.35;cursor:not-allowed;}
+.ex-do-btn:not(:disabled):active{background:#0d3018;}
+.ex-hist{margin-top:10px;border-top:1px solid var(--border);padding-top:8px;}
+.ex-hist-title{font-size:13px;color:var(--text3);font-family:'DotGothic16',monospace;margin-bottom:6px;}
+.ex-hist-row{display:flex;justify-content:space-between;font-size:17px;font-family:'DotGothic16',monospace;padding:4px 0;border-bottom:1px solid var(--border);color:var(--text3);}
+.ex-hist-row .eha{color:var(--green3);font-weight:700;}
+
+/* ACHIEVEMENTS */
+.ach-filter-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;}
+.af-btn{padding:4px 10px;font-size:17px;border-radius:20px;border:1px solid var(--border2);cursor:pointer;background:none;color:var(--text3);font-family:'DotGothic16',monospace;}
+.af-btn.active{background:#3a2808;color:var(--gold2);border-color:var(--gold);}
+.ach-prog-txt{font-size:14px;color:var(--text3);font-family:'DotGothic16',monospace;margin-bottom:8px;}
+.ach-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;}
+.ach-card{background:var(--bg2);border:1px solid var(--border);border-radius:4px;padding:10px;}
+.ach-card.unlocked{border-color:var(--green2);background:#0a1a08;}
+.ach-card.unlocked .an{color:var(--green3);}
+.ach-card.locked .ai{filter:grayscale(1);opacity:.3;}
+.ai{font-size:26px;margin-bottom:3px;}
+.an{font-size:15px;font-weight:700;color:var(--text);font-family:'DotGothic16',monospace;line-height:1.3;}
+.ad{font-size:13px;color:var(--text3);line-height:1.4;margin-top:2px;}
+.ab{font-size:12px;padding:2px 6px;border-radius:10px;display:inline-block;margin-top:4px;font-family:'DotGothic16',monospace;}
+.bclick{background:#0a1a3a;color:#6ab0ff;}
+.bmoney{background:#0a2010;color:var(--green3);}
+.bjackpot{background:#2a0800;color:#ff8844;}
+.bstreak{background:#200a1a;color:#ff88cc;}
+.bspecial{background:#1a0a2a;color:#cc88ff;}
+.bcombo{background:#1a1400;color:#ffcc44;}
+.bafk{background:#0a2a1a;color:#44ffaa;}
+
+/* HISTORY */
+.hist-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);font-family:'DotGothic16',monospace;font-size:15px;color:var(--text3);}
+.hist-amt{font-weight:700;color:var(--text);}
+.hist-amt.big{color:var(--gold2);}
+.hist-amt.jp{color:#ff9944;}
+.hist-tag{font-size:12px;background:#0a2010;color:var(--green3);border:1px solid var(--green);padding:1px 5px;border-radius:3px;margin-right:4px;}
+
+/* TOAST */
+.toast{position:fixed;top:calc(var(--safe-top) + 60px);left:50%;transform:translateX(-50%);background:var(--bg2);border:2px solid var(--gold);border-radius:6px;padding:10px 16px;font-family:'DotGothic16',monospace;font-size:16px;color:var(--gold2);z-index:9999;white-space:nowrap;animation:toastIn .3s ease;pointer-events:none;}
+@keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(-10px);}to{opacity:1;transform:translateX(-50%) translateY(0);}}
+.toast.green{border-color:var(--green2);color:var(--green3);}
+
+/* INSTALL BANNER */
+#install-banner{display:none;background:var(--bg2);border-top:2px solid var(--gold);padding:10px 14px;flex-shrink:0;display:none;align-items:center;gap:10px;}
+#install-banner.show{display:flex;}
+#install-banner p{flex:1;font-size:17px;color:var(--text2);font-family:'DotGothic16',monospace;}
+#install-btn{background:var(--gold);color:#1a0900;border:none;border-radius:4px;padding:7px 14px;font-size:15px;font-family:'DotGothic16',monospace;cursor:pointer;font-weight:700;}
+#dismiss-install{background:none;border:none;color:var(--text3);font-size:26px;cursor:pointer;padding:0 4px;}
 </style>
-
-<h2 class="sr-only">點擊硬幣遊戲 / Münzklick-Spiel</h2>
-<div id="game">
-
-<div class="top-bar">
-  <button class="lang-btn active" id="lang-zh" onclick="setLang('zh')">🇹🇼 中文</button>
-  <button class="lang-btn" id="lang-de" onclick="setLang('de')">🇩🇪 Deutsch</button>
-</div>
-
-<div class="stat-grid">
-  <div class="stat"><div class="stat-label" id="lbl-total">💰 總金額</div><div class="stat-value" id="total">$0</div></div>
-  <div class="stat"><div class="stat-label" id="lbl-clicks">🖱️ 點擊</div><div class="stat-value" id="clicks">0</div></div>
-  <div class="stat"><div class="stat-label" id="lbl-ach">🏆 成就</div><div class="stat-value" id="ach-count">0/103</div></div>
-  <div class="stat"><div class="stat-label" id="lbl-best">⚡ 最高單次</div><div class="stat-value" id="best">$0</div></div>
-</div>
-
-<div class="tabs">
-  <button class="tab active" id="tab-game" onclick="switchTab('game')">🪙 點擊</button>
-  <button class="tab" id="tab-afk" onclick="switchTab('afk')">⏱️ 掛機</button>
-  <button class="tab" id="tab-achievements" onclick="switchTab('achievements')">🏆 成就</button>
-  <button class="tab" id="tab-history" onclick="switchTab('history')">📋 紀錄</button>
-</div>
-
-<div id="panel-game" class="panel show">
-  <div style="text-align:center;padding:.75rem 0;">
-    <div id="jackpot-banner">🎉 JACKPOT！</div>
-    <button id="coin-btn" aria-label="點擊硬幣">🪙</button>
-    <p id="coin-hint" style="font-size:12px;color:var(--color-text-secondary);margin-top:8px;">點擊硬幣來賺錢！</p>
-    <div id="combo-display" style="font-size:12px;color:var(--color-text-secondary);min-height:16px;"></div>
-  </div>
-  <div class="exchange-card">
-    <div class="ex-header">
-      <span class="ex-label" id="lbl-exchange">💱 兌換試算</span>
-      <div class="ex-toggle">
-        <button id="btn-twd" class="active" onclick="setCurrency('twd')">🇹🇼 TWD</button>
-        <button id="btn-eur" onclick="setCurrency('eur')">🇪🇺 EUR</button>
-      </div>
-    </div>
-    <div class="ex-body">
-      <div class="ex-flag" id="ex-flag">🇹🇼</div>
-      <div class="ex-right">
-        <div class="ex-amount" id="ex-amount">NT$0</div>
-        <div class="ex-sub" id="ex-sub"></div>
-      </div>
+</head>
+<body>
+<div id="app">
+  <div class="topbar">
+    <div class="stat-row">
+      <div class="stat-box"><div class="stat-label">💰金額</div><div class="stat-val" id="s-total">$0</div></div>
+      <div class="stat-box"><div class="stat-label">🖱️點擊</div><div class="stat-val" id="s-clicks">0</div></div>
+      <div class="stat-box"><div class="stat-label">🏆成就</div><div class="stat-val" id="s-ach">0/103</div></div>
+      <div class="stat-box"><div class="stat-label">🇹🇼台幣</div><div class="stat-val twd" id="s-twd">NT$0</div></div>
     </div>
   </div>
-  <button id="reset-btn" onclick="resetGame()">重置遊戲</button>
-</div>
 
-<div id="panel-afk" class="panel">
-  <div class="afk-card">
-    <div class="afk-title" id="lbl-afk-title">⏱️ 掛機時長設定</div>
-    <div class="duration-grid">
-      <button class="dur-btn selected" id="dur-0" onclick="selectPreset(0,1500)">25 <span id="lbl-min">分鐘</span><div class="dur-sub" id="lbl-dur0-sub">快速掛機</div></button>
-      <button class="dur-btn" id="dur-1" onclick="selectPreset(1,3600)">1 <span id="lbl-hr">小時</span><div class="dur-sub" id="lbl-dur1-sub">穩定收益</div></button>
-      <button class="dur-btn" id="dur-2" onclick="selectPreset(2,-1)" id="dur-2"><span id="lbl-custom">自訂</span><div class="dur-sub" id="lbl-dur2-sub">隨你決定</div></button>
-    </div>
-    <div class="custom-row" id="custom-row" style="display:none;">
-      <label id="lbl-duration">時長：</label>
-      <input type="range" id="custom-dur" min="60" max="7200" step="60" value="600">
-      <span id="custom-dur-label">10 分鐘</span>
-    </div>
-    <button id="afk-start-btn" onclick="toggleAfk()">▶ 開始掛機</button>
-    <div class="afk-progress-wrap" id="afk-progress-wrap" style="display:none;">
-      <div class="afk-progress-label">
-        <span id="afk-progress-text"></span>
-        <span id="afk-progress-pct">0%</span>
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('game')">🪙點擊</button>
+    <button class="tab" onclick="switchTab('afk')">⏱掛機</button>
+    <button class="tab" onclick="switchTab('exchange')">💱兌換</button>
+    <button class="tab" onclick="switchTab('ach')">🏆成就</button>
+    <button class="tab" onclick="switchTab('hist')">📋紀錄</button>
+  </div>
+
+  <div class="panels">
+    <!-- GAME -->
+    <div id="panel-game" class="panel show">
+      <div id="jackpot-banner">🎉 JACKPOT！大獎！</div>
+      <div class="coin-wrap">
+        <button id="coin-btn" aria-label="點擊硬幣">
+          <canvas id="coin-canvas" width="110" height="110"></canvas>
+        </button>
+        <div class="coin-ring"></div>
       </div>
-      <div class="progress-track"><div class="progress-fill" id="afk-bar" style="width:0%"></div></div>
+      <div class="combo-bar" id="combo-bar"></div>
+      <div class="tap-hint">點擊硬幣來賺錢！</div>
+      <div class="mini-history" id="mini-history"></div>
+      <button id="reset-btn" onclick="resetGame()">重置遊戲</button>
+    </div>
+
+    <!-- AFK -->
+    <div id="panel-afk" class="panel">
+      <div class="card">
+        <div class="card-title">⏱ 掛機時長設定</div>
+        <div class="dur-grid">
+          <button class="dur-btn sel" id="dur-0" onclick="selPreset(0,1500)">25分鐘<div class="dsub">快速掛機</div></button>
+          <button class="dur-btn" id="dur-1" onclick="selPreset(1,3600)">1小時<div class="dsub">穩定收益</div></button>
+          <button class="dur-btn" id="dur-2" onclick="selPreset(2,-1)">自訂<div class="dsub">隨你決定</div></button>
+        </div>
+        <div class="custom-row" id="custom-row" style="display:none">
+          <label>時長：</label>
+          <input type="range" id="custom-dur" min="60" max="7200" step="60" value="600" oninput="updateCustomLbl()">
+          <span id="custom-lbl">10分鐘</span>
+        </div>
+        <button class="afk-btn" id="afk-btn" onclick="toggleAfk()">▶ 開始掛機</button>
+        <div id="afk-prog-wrap" style="display:none;margin-top:10px;">
+          <div style="display:flex;justify-content:space-between;font-size:14px;color:var(--text3);font-family:'DotGothic16',monospace;">
+            <span id="afk-status">掛機中...</span><span id="afk-left"></span>
+          </div>
+          <div class="prog-bg"><div class="prog-fill" id="prog-fill"></div></div>
+          <div class="afk-stats">
+            <div class="afk-st"><div class="afk-st-l">本次收入</div><div class="afk-st-v" id="afk-earn">$0</div></div>
+            <div class="afk-st"><div class="afk-st-l">已過時間</div><div class="afk-st-v" id="afk-el">0s</div></div>
+            <div class="afk-st"><div class="afk-st-l">大獎次數</div><div class="afk-st-v" id="afk-jk">0</div></div>
+          </div>
+          <div class="afk-log" id="afk-log"></div>
+        </div>
+      </div>
+      <div class="result-card" id="result-card">
+        <div class="result-title">✅ 掛機結算完成！</div>
+        <div class="result-grid">
+          <div class="result-stat"><div class="rv" id="res-earn">$0</div><div class="rl">總收入</div></div>
+          <div class="result-stat"><div class="rv" id="res-ticks">0</div><div class="rl">收穫次數</div></div>
+          <div class="result-stat"><div class="rv" id="res-jk">0</div><div class="rl">大獎次數</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- EXCHANGE -->
+    <div id="panel-exchange" class="panel">
+      <div class="card">
+        <div class="rate-tag">💱 匯率：每 $100,000 = NT$1</div>
+        <div class="twd-banner">
+          <span class="tl">🇹🇼 累計兌換台幣</span>
+          <span class="tv" id="twd-total">NT$0</span>
+        </div>
+        <div class="ex-balrow">
+          <div class="ex-bal"><div class="ex-bal-l">💰 可用遊戲金額</div><div class="ex-bal-v" id="ex-balance">$0</div></div>
+          <div class="ex-bal"><div class="ex-bal-l">🇹🇼 可兌換台幣</div><div class="ex-bal-v tw" id="ex-conv">NT$0</div></div>
+        </div>
+        <div class="ex-inp-row">
+          <input type="number" id="ex-input" inputmode="numeric" placeholder="輸入兌換台幣數量" oninput="updateExPrev()">
+          <button class="ex-max-btn" onclick="exMax()">最大</button>
+        </div>
+        <div class="ex-preview" id="ex-prev">請輸入兌換數量</div>
+        <button class="ex-do-btn" id="ex-btn" onclick="doExchange()" disabled>兌換</button>
+        <div class="ex-hist" id="ex-hist" style="display:none">
+          <div class="ex-hist-title">兌換紀錄</div>
+          <div id="ex-hist-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ACHIEVEMENTS -->
+    <div id="panel-ach" class="panel">
+      <div class="ach-filter-row" id="ach-filters"></div>
+      <div class="ach-prog-txt" id="ach-prog"></div>
+      <div class="ach-grid" id="ach-grid"></div>
+    </div>
+
+    <!-- HISTORY -->
+    <div id="panel-hist" class="panel">
+      <div id="hist-list"></div>
     </div>
   </div>
-  <div id="afk-result" style="display:none;" class="afk-result"></div>
-  <div class="afk-log" id="afk-log"></div>
-</div>
 
-<div id="panel-achievements" class="panel">
-  <div class="ach-filters" id="ach-filters"></div>
-  <div class="ach-grid" id="ach-grid"></div>
-</div>
-
-<div id="panel-history" class="panel">
-  <div class="history" id="history-list"></div>
-</div>
+  <div id="install-banner">
+    <p>加入主畫面，隨時快速啟動！</p>
+    <button id="install-btn">加入</button>
+    <button id="dismiss-install" onclick="document.getElementById('install-banner').classList.remove('show')">✕</button>
+  </div>
 </div>
 
 <script>
-const T={
-  zh:{
-    total:'💰 總金額',clicks:'🖱️ 點擊',ach:'🏆 成就',best:'⚡ 最高單次',
-    tabGame:'🪙 點擊',tabAfk:'⏱️ 掛機',tabAch:'🏆 成就',tabHist:'📋 紀錄',
-    coinHint:'點擊硬幣來賺錢！',jackpot:'🎉 JACKPOT！大獎！',
-    exchange:'💱 兌換試算',
-    exSubTwd:'每 10 萬遊戲幣 = NT$1',exSubEur:'每 10 萬遊戲幣 = €{r}',exRate:'1 EUR = {r} TWD（即時）',
-    reset:'重置遊戲',
-    afkTitle:'⏱️ 掛機時長設定',min:'分鐘',hr:'小時',custom:'自訂',
-    dur0sub:'快速掛機',dur1sub:'穩定收益',dur2sub:'隨你決定',
-    duration:'時長：',startAfk:'▶ 開始掛機',stopAfk:'⏹ 停止掛機',
-    afkRunning:'掛機中 — 剩餘 ',afkDone:'✅ 掛機結束！共 {s}s，收入 ${e}',afkJacks:'，大獎 {n} 次',
-    combo:'🔥 連擊 {n} 次！',
-    normal:'普通',lucky:'✨ 好運',jackpotLabel:'🎉 大獎',afkSrc:'掛機',
-    cats:{all:'全部',click:'點擊',money:'金錢',jackpot:'大獎',streak:'連擊',afk:'掛機',special:'特殊'},
-    achCats:{click:'點擊',money:'金錢',jackpot:'大獎',streak:'連擊',special:'特殊',combo:'組合',afk:'掛機'},
-  },
-  de:{
-    total:'💰 Gesamtbetrag',clicks:'🖱️ Klicks',ach:'🏆 Erfolge',best:'⚡ Bestes Klick',
-    tabGame:'🪙 Klicken',tabAfk:'⏱️ AFK',tabAch:'🏆 Erfolge',tabHist:'📋 Verlauf',
-    coinHint:'Klicke die Münze, um Geld zu verdienen!',jackpot:'🎉 JACKPOT!',
-    exchange:'💱 Umrechnung',
-    exSubTwd:'Alle 100.000 Punkte = NT$1',exSubEur:'Alle 100.000 Punkte = €{r}',exRate:'1 EUR = {r} TWD (aktuell)',
-    reset:'Spiel zurücksetzen',
-    afkTitle:'⏱️ AFK-Dauer einstellen',min:'Min.',hr:'Std.',custom:'Eigene',
-    dur0sub:'Schnell',dur1sub:'Stabil',dur2sub:'Frei wählen',
-    duration:'Dauer:',startAfk:'▶ AFK starten',stopAfk:'⏹ AFK stoppen',
-    afkRunning:'Läuft — verbleibend ',afkDone:'✅ AFK beendet! {s}s, Einnahmen ${e}',afkJacks:'，Jackpots: {n}',
-    combo:'🔥 Kombo ×{n}!',
-    normal:'Normal',lucky:'✨ Glück',jackpotLabel:'🎉 Jackpot',afkSrc:'AFK',
-    cats:{all:'Alle',click:'Klicks',money:'Geld',jackpot:'Jackpot',streak:'Serie',afk:'AFK',special:'Speziell'},
-    achCats:{click:'Klicks',money:'Geld',jackpot:'Jackpot',streak:'Serie',special:'Speziell',combo:'Kombo',afk:'AFK'},
+// ── PIXEL COIN CANVAS ──────────────────────────────────
+(function(){
+  const c = document.getElementById('coin-canvas');
+  if(!c) return;
+  const ctx = c.getContext('2d');
+  const W = 110, GRID = 32, S = W/GRID;
+
+  function px(x,y,col){
+    ctx.fillStyle = col;
+    ctx.fillRect(Math.floor(x*S), Math.floor(y*S), Math.ceil(S), Math.ceil(S));
   }
+
+  const DARK='#5a3700', SHADOW='#a06400', MID='#d29614', GOLD='#f0b91e',
+        LIGHT='#ffd84a', SHINE='#fff0a0', WHITE='#ffffd8', RIM='#b47810';
+
+  // Coin body using circle math
+  const cx=16,cy=16,r=13.5;
+  for(let y=0;y<32;y++) for(let x=0;x<32;x++){
+    const dx=x-cx+.5, dy=y-cy+.5, dist=Math.sqrt(dx*dx+dy*dy);
+    if(dist<=r){
+      const edge = r - dist;
+      if(edge < 1.5) px(x,y,MID);
+      else px(x,y,GOLD);
+    }
+  }
+  // Shadow left/bottom
+  for(let y=0;y<32;y++) for(let x=0;x<32;x++){
+    const dx=x-cx+.5, dy=y-cy+.5, dist=Math.sqrt(dx*dx+dy*dy);
+    if(dist<=r && dist>r-1.5 && (dx<0||dy>0)) px(x,y,SHADOW);
+  }
+  // Shine top-left
+  for(let y=2;y<14;y++) for(let x=2;x<14;x++){
+    const dx=x-cx+.5, dy=y-cy+.5, dist=Math.sqrt(dx*dx+dy*dy);
+    if(dist<=r-1 && x<cx-1 && y<cy-1) px(x,y,SHINE);
+  }
+  // Specular
+  for(let y=4;y<8;y++) for(let x=4;x<8;x++){
+    const dx=x-cx+.5, dy=y-cy+.5, dist=Math.sqrt(dx*dx+dy*dy);
+    if(dist<=r-2 && x<cx-3 && y<cy-3) px(x,y,WHITE);
+  }
+  // Kanji 円 style
+  const D=DARK, L=LIGHT;
+  // Top bar
+  for(let x=11;x<21;x++) px(x,10,D);
+  // Second bar
+  for(let x=11;x<21;x++) px(x,13,D);
+  // Left vertical
+  for(let y=10;y<22;y++) px(11,y,D);
+  // Right vertical
+  for(let y=10;y<22;y++) px(20,y,D);
+  // Bottom bar
+  for(let x=11;x<21;x++) px(x,21,D);
+  // Center vertical
+  for(let y=13;y<22;y++) px(15,y,D);
+  // Inner fill
+  for(let y=11;y<13;y++) for(let x=12;x<20;x++) px(x,y,L);
+  for(let y=14;y<21;y++) for(let x=12;x<15;x++) px(x,y,L);
+  for(let y=14;y<21;y++) for(let x=16;x<20;x++) px(x,y,L);
+})();
+
+// ── GAME STATE ─────────────────────────────────────────
+const RATE = 100000;
+let G = {
+  total:0,clicks:0,bestSingle:0,jackpots:0,streak:0,bigStreak:0,
+  tenPlusStreak:0,fivePlusStreak:0,jackpotStreak:0,
+  fastClick:false,exactHundred:false,slowClick:false,verySlowClick:false,
+  tabSwitches:0,doubleJackpot:false,gotOneDollar:false,
+  rapidClicks:0,resets:0,sameMinuteJackpot:0,clicksPerMin:0,
+  richIn10:false,jackpotIn5:false,tripleHundred:false,sixthJackpot:false,
+  jackpotTotal:0,first3done:false,unlockedCount:0,
+  lastJackpotMinute:-1,lastClickTime:0,consecutiveJackpots:0,
+  first3amounts:[],sixthCheck:false,hundredStreak:0,
+  recentClickTimes:[],minClickCount:0,minClickStart:0,
+  afkSessions:0,afkTotalSecs:0,afkMaxSession:0,afkTotalEarned:0,afkJackpots:0,
+  twdTotal:0,
 };
+let unlocked=new Set(), history=[], exHistory=[], currentFilter='all', currentTab='game';
+let afkTimer=null, afkElapsed=0, afkDuration=1500, afkEarned=0, afkJacks=0, afkLog=[];
+let selPresetIdx=0;
 
-const achievements=[
-  {id:'c1',cat:'click',icon:'👆',zh:{name:'初次點擊',desc:'點擊 1 次'},de:{name:'Erster Klick',desc:'1 Mal klicken'},badge:'bclick',check:s=>s.clicks>=1},
-  {id:'c2',cat:'click',icon:'✌️',zh:{name:'雙擊',desc:'點擊 2 次'},de:{name:'Doppelklick',desc:'2 Mal klicken'},badge:'bclick',check:s=>s.clicks>=2},
-  {id:'c3',cat:'click',icon:'🖐️',zh:{name:'五下',desc:'點擊 5 次'},de:{name:'Fünfmal',desc:'5 Mal klicken'},badge:'bclick',check:s=>s.clicks>=5},
-  {id:'c4',cat:'click',icon:'🔟',zh:{name:'十連擊',desc:'點擊 10 次'},de:{name:'Zehn Klicks',desc:'10 Mal klicken'},badge:'bclick',check:s=>s.clicks>=10},
-  {id:'c5',cat:'click',icon:'💪',zh:{name:'二十下',desc:'點擊 20 次'},de:{name:'Zwanzig',desc:'20 Mal klicken'},badge:'bclick',check:s=>s.clicks>=20},
-  {id:'c6',cat:'click',icon:'🎯',zh:{name:'半百',desc:'點擊 50 次'},de:{name:'Fünfzig',desc:'50 Mal klicken'},badge:'bclick',check:s=>s.clicks>=50},
-  {id:'c7',cat:'click',icon:'💯',zh:{name:'整百',desc:'點擊 100 次'},de:{name:'Hundert',desc:'100 Mal klicken'},badge:'bclick',check:s=>s.clicks>=100},
-  {id:'c8',cat:'click',icon:'🌀',zh:{name:'停不下來',desc:'點擊 200 次'},de:{name:'Unaufhörlich',desc:'200 Mal klicken'},badge:'bclick',check:s=>s.clicks>=200},
-  {id:'c9',cat:'click',icon:'🔥',zh:{name:'手速達人',desc:'點擊 500 次'},de:{name:'Schnellklicker',desc:'500 Mal klicken'},badge:'bclick',check:s=>s.clicks>=500},
-  {id:'c10',cat:'click',icon:'⚡',zh:{name:'閃電手',desc:'點擊 1,000 次'},de:{name:'Blitzhand',desc:'1.000 Mal klicken'},badge:'bclick',check:s=>s.clicks>=1000},
-  {id:'c11',cat:'click',icon:'🌟',zh:{name:'點擊狂魔',desc:'點擊 2,000 次'},de:{name:'Klick-Maniac',desc:'2.000 Mal klicken'},badge:'bclick',check:s=>s.clicks>=2000},
-  {id:'c12',cat:'click',icon:'🚀',zh:{name:'指尖火箭',desc:'點擊 5,000 次'},de:{name:'Fingerrakete',desc:'5.000 Mal klicken'},badge:'bclick',check:s=>s.clicks>=5000},
-  {id:'m1',cat:'money',icon:'💵',zh:{name:'第一桶金',desc:'累積 $10'},de:{name:'Erstes Geld',desc:'$10 gesammelt'},badge:'bmoney',check:s=>s.total>=10},
-  {id:'m2',cat:'money',icon:'💴',zh:{name:'小有積蓄',desc:'累積 $50'},de:{name:'Kleine Ersparnisse',desc:'$50 gesammelt'},badge:'bmoney',check:s=>s.total>=50},
-  {id:'m3',cat:'money',icon:'💶',zh:{name:'百元俱樂部',desc:'累積 $100'},de:{name:'Hundert-Club',desc:'$100 gesammelt'},badge:'bmoney',check:s=>s.total>=100},
-  {id:'m4',cat:'money',icon:'💷',zh:{name:'小富翁',desc:'累積 $500'},de:{name:'Kleiner Reicher',desc:'$500 gesammelt'},badge:'bmoney',check:s=>s.total>=500},
-  {id:'m5',cat:'money',icon:'🏦',zh:{name:'進入銀行',desc:'累積 $1,000'},de:{name:'Bankebene',desc:'$1.000 gesammelt'},badge:'bmoney',check:s=>s.total>=1000},
-  {id:'m6',cat:'money',icon:'💎',zh:{name:'鑽石會員',desc:'累積 $5,000'},de:{name:'Diamant-Mitglied',desc:'$5.000 gesammelt'},badge:'bmoney',check:s=>s.total>=5000},
-  {id:'m7',cat:'money',icon:'👑',zh:{name:'萬元王',desc:'累積 $10,000'},de:{name:'Zehntausend-König',desc:'$10.000 gesammelt'},badge:'bmoney',check:s=>s.total>=10000},
-  {id:'m8',cat:'money',icon:'🏰',zh:{name:'城堡擁有者',desc:'累積 $50,000'},de:{name:'Schlossbesitzer',desc:'$50.000 gesammelt'},badge:'bmoney',check:s=>s.total>=50000},
-  {id:'m9',cat:'money',icon:'🌍',zh:{name:'世界首富',desc:'累積 $100,000'},de:{name:'Weltreichster',desc:'$100.000 gesammelt'},badge:'bmoney',check:s=>s.total>=100000},
-  {id:'m10',cat:'money',icon:'🛸',zh:{name:'宇宙首富',desc:'累積 $500,000'},de:{name:'Weltraum-Milliardär',desc:'$500.000 gesammelt'},badge:'bmoney',check:s=>s.total>=500000},
-  {id:'m11',cat:'money',icon:'🌌',zh:{name:'億萬傳說',desc:'累積 $100,000,000'},de:{name:'Milliarden-Legende',desc:'$100.000.000 gesammelt'},badge:'bmoney',check:s=>s.total>=100000000},
-  {id:'j1',cat:'jackpot',icon:'🎰',zh:{name:'首次大獎',desc:'觸發第 1 次大獎'},de:{name:'Erster Jackpot',desc:'1 Jackpot ausgelöst'},badge:'bjackpot',check:s=>s.jackpots>=1},
-  {id:'j2',cat:'jackpot',icon:'🎊',zh:{name:'幸運三連',desc:'觸發 3 次大獎'},de:{name:'Glückstrio',desc:'3 Jackpots ausgelöst'},badge:'bjackpot',check:s=>s.jackpots>=3},
-  {id:'j3',cat:'jackpot',icon:'🥇',zh:{name:'大獎常客',desc:'觸發 10 次大獎'},de:{name:'Jackpot-Stammgast',desc:'10 Jackpots ausgelöst'},badge:'bjackpot',check:s=>s.jackpots>=10},
-  {id:'j4',cat:'jackpot',icon:'🃏',zh:{name:'幸運之神',desc:'觸發 25 次大獎'},de:{name:'Glücksgott',desc:'25 Jackpots ausgelöst'},badge:'bjackpot',check:s=>s.jackpots>=25},
-  {id:'j5',cat:'jackpot',icon:'🌈',zh:{name:'彩虹大獎',desc:'觸發 50 次大獎'},de:{name:'Regenbogen-Jackpot',desc:'50 Jackpots ausgelöst'},badge:'bjackpot',check:s=>s.jackpots>=50},
-  {id:'j6',cat:'jackpot',icon:'💥',zh:{name:'爆破金庫',desc:'觸發 100 次大獎'},de:{name:'Tresorsprenger',desc:'100 Jackpots ausgelöst'},badge:'bjackpot',check:s=>s.jackpots>=100},
-  {id:'j7',cat:'jackpot',icon:'🎆',zh:{name:'煙火大師',desc:'大獎累積超 $10,000'},de:{name:'Feuerwerksmeister',desc:'Jackpots über $10.000'},badge:'bjackpot',check:s=>s.jackpotTotal>=10000},
-  {id:'j8',cat:'jackpot',icon:'🌠',zh:{name:'流星雨',desc:'大獎累積超 $50,000'},de:{name:'Sternschnuppe',desc:'Jackpots über $50.000'},badge:'bjackpot',check:s=>s.jackpotTotal>=50000},
-  {id:'j9',cat:'jackpot',icon:'☄️',zh:{name:'彗星降臨',desc:'連續 2 次大獎'},de:{name:'Kometeneinschlag',desc:'2 Jackpots hintereinander'},badge:'bjackpot',check:s=>s.consecutiveJackpots>=2},
-  {id:'j10',cat:'jackpot',icon:'🌋',zh:{name:'火山爆發',desc:'連續 3 次大獎'},de:{name:'Vulkanausbruch',desc:'3 Jackpots hintereinander'},badge:'bjackpot',check:s=>s.consecutiveJackpots>=3},
-  {id:'s1',cat:'streak',icon:'✨',zh:{name:'三連星',desc:'連續 3 次 $5+'},de:{name:'Dreifachstern',desc:'3× in Folge $5+'},badge:'bstreak',check:s=>s.fivePlusStreak>=3},
-  {id:'s2',cat:'streak',icon:'🔗',zh:{name:'串串樂',desc:'連續 5 次 $5+'},de:{name:'Kettenglück',desc:'5× in Folge $5+'},badge:'bstreak',check:s=>s.fivePlusStreak>=5},
-  {id:'s3',cat:'streak',icon:'🎵',zh:{name:'節奏感',desc:'連續 10 次 $5+'},de:{name:'Rhythmusgefühl',desc:'10× in Folge $5+'},badge:'bstreak',check:s=>s.fivePlusStreak>=10},
-  {id:'s4',cat:'streak',icon:'🎶',zh:{name:'旋律大師',desc:'連續 20 次 $5+'},de:{name:'Melodiemeister',desc:'20× in Folge $5+'},badge:'bstreak',check:s=>s.fivePlusStreak>=20},
-  {id:'s5',cat:'streak',icon:'🎸',zh:{name:'搖滾電吉他',desc:'連續 10 次 $10+'},de:{name:'Rockgitarre',desc:'10× in Folge $10+'},badge:'bstreak',check:s=>s.tenPlusStreak>=10},
-  {id:'s6',cat:'streak',icon:'🎹',zh:{name:'鋼琴獨奏',desc:'連續 20 次 $10+'},de:{name:'Klaviersolo',desc:'20× in Folge $10+'},badge:'bstreak',check:s=>s.tenPlusStreak>=20},
-  {id:'s7',cat:'streak',icon:'🎻',zh:{name:'弦樂四重奏',desc:'連擊達 10 次'},de:{name:'Streichquartett',desc:'10er-Kombo'},badge:'bstreak',check:s=>s.streak>=10},
-  {id:'s8',cat:'streak',icon:'🥁',zh:{name:'鼓手',desc:'連擊達 20 次'},de:{name:'Schlagzeuger',desc:'20er-Kombo'},badge:'bstreak',check:s=>s.streak>=20},
-  {id:'s9',cat:'streak',icon:'🎺',zh:{name:'銅管樂手',desc:'連擊達 50 次'},de:{name:'Blechbläser',desc:'50er-Kombo'},badge:'bstreak',check:s=>s.streak>=50},
-  {id:'s10',cat:'streak',icon:'🎙️',zh:{name:'舞台之王',desc:'連擊達 100 次'},de:{name:'Bühnenkönig',desc:'100er-Kombo'},badge:'bstreak',check:s=>s.streak>=100},
-  {id:'sp1',cat:'special',icon:'🍀',zh:{name:'幸運草',desc:'單次獲得剛好 $1'},de:{name:'Gleeblatt',desc:'Genau $1 in einem Klick'},badge:'bspecial',check:s=>s.gotOneDollar},
-  {id:'sp2',cat:'special',icon:'🎱',zh:{name:'幸運 8',desc:'單次獲得 $88'},de:{name:'Glück 8',desc:'$88 in einem Klick'},badge:'bspecial',check:s=>s.bestSingle===88},
-  {id:'sp3',cat:'special',icon:'💯',zh:{name:'整百',desc:'單次獲得剛好 $100'},de:{name:'Genaues Hundert',desc:'Genau $100 in einem Klick'},badge:'bspecial',check:s=>s.exactHundred},
-  {id:'sp4',cat:'special',icon:'🐌',zh:{name:'蝸牛速度',desc:'兩次點擊間隔超過 30 秒'},de:{name:'Schneckentempo',desc:'30 Sek. Pause zwischen Klicks'},badge:'bspecial',check:s=>s.slowClick},
-  {id:'sp5',cat:'special',icon:'🦥',zh:{name:'樹懶模式',desc:'兩次點擊間隔超過 2 分鐘'},de:{name:'Faultiermodus',desc:'2 Min. Pause zwischen Klicks'},badge:'bspecial',check:s=>s.verySlowClick},
-  {id:'sp6',cat:'special',icon:'⚡',zh:{name:'超音速',desc:'連續 5 次點擊間隔 < 0.5 秒'},de:{name:'Überschall',desc:'5 Klicks unter 0,5 Sek.'},badge:'bspecial',check:s=>s.fastClick},
-  {id:'sp7',cat:'special',icon:'🔄',zh:{name:'重來一次',desc:'重置遊戲 1 次'},de:{name:'Neustart',desc:'Spiel 1× zurückgesetzt'},badge:'bspecial',check:s=>s.resets>=1},
-  {id:'sp8',cat:'special',icon:'♾️',zh:{name:'永不放棄',desc:'重置遊戲 5 次'},de:{name:'Niemals aufgeben',desc:'Spiel 5× zurückgesetzt'},badge:'bspecial',check:s=>s.resets>=5},
-  {id:'sp9',cat:'special',icon:'🎭',zh:{name:'雙重人格',desc:'切換頁籤 10 次'},de:{name:'Doppelnatur',desc:'10× Tab gewechselt'},badge:'bspecial',check:s=>s.tabSwitches>=10},
-  {id:'sp10',cat:'special',icon:'🌙',zh:{name:'夜貓子',desc:'深夜 0~4 點開啟遊戲'},de:{name:'Nachteule',desc:'Spiel zwischen 0–4 Uhr geöffnet'},badge:'bspecial',check:()=>{let h=new Date().getHours();return h>=0&&h<4;}},
-  {id:'cb1',cat:'combo',icon:'🎁',zh:{name:'前三名',desc:'前 3 次點擊都超過 $5'},de:{name:'Top-Drei',desc:'Erste 3 Klicks über $5'},badge:'bcombo',check:s=>s.first3done&&s.first3amounts.every(v=>v>=5)},
-  {id:'cb2',cat:'combo',icon:'💫',zh:{name:'黃金開場',desc:'首 5 次內觸發大獎'},de:{name:'Goldstart',desc:'Jackpot in ersten 5 Klicks'},badge:'bcombo',check:s=>s.jackpotIn5&&s.jackpots>=1&&s.clicks<=5},
-  {id:'cb3',cat:'combo',icon:'🧲',zh:{name:'財富磁鐵',desc:'10 次內累積 $500'},de:{name:'Geldmagnet',desc:'$500 in 10 Klicks'},badge:'bcombo',check:s=>s.richIn10},
-  {id:'cb4',cat:'combo',icon:'🃏',zh:{name:'連莊大獎',desc:'連續 3 次大獎'},de:{name:'Jackpot-Serie',desc:'3 Jackpots hintereinander'},badge:'bcombo',check:s=>s.jackpotStreak>=3},
-  {id:'cb5',cat:'combo',icon:'🌀',zh:{name:'三重奏',desc:'單分鐘內 3 次大獎'},de:{name:'Dreifach-Jackpot',desc:'3 Jackpots in einer Minute'},badge:'bcombo',check:s=>s.sameMinuteJackpot>=3},
-  {id:'cb6',cat:'combo',icon:'📈',zh:{name:'超速成長',desc:'100 次均值超 $20'},de:{name:'Turbowachstum',desc:'Durchschnitt über $20 (100 Klicks)'},badge:'bcombo',check:s=>s.clicks>=100&&s.total/s.clicks>=20},
-  {id:'b1',cat:'click',icon:'🌱',zh:{name:'萌芽',desc:'點擊 10 次'},de:{name:'Keim',desc:'10 Mal klicken'},badge:'bclick',check:s=>s.clicks>=10},
-  {id:'b2',cat:'money',icon:'🪴',zh:{name:'小植物',desc:'累積 $200'},de:{name:'Pflänzchen',desc:'$200 gesammelt'},badge:'bmoney',check:s=>s.total>=200},
-  {id:'b3',cat:'jackpot',icon:'🎪',zh:{name:'馬戲團',desc:'觸發 5 次大獎'},de:{name:'Zirkus',desc:'5 Jackpots ausgelöst'},badge:'bjackpot',check:s=>s.jackpots>=5},
-  {id:'b4',cat:'streak',icon:'🌊',zh:{name:'海浪',desc:'連擊 15 次'},de:{name:'Welle',desc:'15er-Kombo'},badge:'bstreak',check:s=>s.streak>=15},
-  {id:'b5',cat:'special',icon:'🦋',zh:{name:'蝴蝶效應',desc:'單次獲得 $777'},de:{name:'Schmetterlingseffekt',desc:'$777 in einem Klick'},badge:'bspecial',check:s=>s.bestSingle===777},
-  {id:'b6',cat:'money',icon:'🏡',zh:{name:'小屋',desc:'累積 $2,000'},de:{name:'Häuschen',desc:'$2.000 gesammelt'},badge:'bmoney',check:s=>s.total>=2000},
-  {id:'b7',cat:'click',icon:'🌳',zh:{name:'大樹',desc:'點擊 300 次'},de:{name:'Großer Baum',desc:'300 Mal klicken'},badge:'bclick',check:s=>s.clicks>=300},
-  {id:'b8',cat:'afk',icon:'🤖',zh:{name:'首次掛機',desc:'完成 1 次掛機'},de:{name:'Erster AFK',desc:'1 AFK abgeschlossen'},badge:'bafk',check:s=>s.afkSessions>=1},
-  {id:'b9',cat:'afk',icon:'⏰',zh:{name:'掛機常客',desc:'完成 5 次掛機'},de:{name:'AFK-Stammgast',desc:'5 AFK abgeschlossen'},badge:'bafk',check:s=>s.afkSessions>=5},
-  {id:'b10',cat:'afk',icon:'🌙',zh:{name:'夜班工人',desc:'完成 10 次掛機'},de:{name:'Nachtarbeiter',desc:'10 AFK abgeschlossen'},badge:'bafk',check:s=>s.afkSessions>=10},
-  {id:'b11',cat:'afk',icon:'⌛',zh:{name:'時間管理師',desc:'掛機累積超 10 分鐘'},de:{name:'Zeitmanager',desc:'10 Min. AFK gesamt'},badge:'bafk',check:s=>s.afkTotalSecs>=600},
-  {id:'b12',cat:'afk',icon:'🕐',zh:{name:'掛機達人',desc:'掛機累積超 1 小時'},de:{name:'AFK-Profi',desc:'1 Std. AFK gesamt'},badge:'bafk',check:s=>s.afkTotalSecs>=3600},
-  {id:'b13',cat:'afk',icon:'💤',zh:{name:'睡美人',desc:'掛機累積超 3 小時'},de:{name:'Dornröschen',desc:'3 Std. AFK gesamt'},badge:'bafk',check:s=>s.afkTotalSecs>=10800},
-  {id:'b14',cat:'afk',icon:'💰',zh:{name:'掛機暴富',desc:'掛機累積收入超 $10,000'},de:{name:'AFK-Reich',desc:'$10.000 per AFK verdient'},badge:'bafk',check:s=>s.afkTotalEarned>=10000},
-  {id:'b15',cat:'afk',icon:'🤑',zh:{name:'睡後收入',desc:'掛機累積收入超 $100,000'},de:{name:'Passives Einkommen',desc:'$100.000 per AFK verdient'},badge:'bafk',check:s=>s.afkTotalEarned>=100000},
-  {id:'b16',cat:'afk',icon:'🏆',zh:{name:'掛機冠軍',desc:'單次掛機賺超 $5,000'},de:{name:'AFK-Champion',desc:'$5.000 in einer AFK-Sitzung'},badge:'bafk',check:s=>s.afkMaxSession>=5000},
-  {id:'b17',cat:'afk',icon:'⚡',zh:{name:'閃電掛機',desc:'掛機獲得大獎'},de:{name:'Blitz-AFK',desc:'Jackpot während AFK'},badge:'bafk',check:s=>s.afkJackpots>=1},
-  {id:'b18',cat:'afk',icon:'🎰',zh:{name:'掛機賭神',desc:'掛機獲得 10 次大獎'},de:{name:'AFK-Spielgott',desc:'10 Jackpots per AFK'},badge:'bafk',check:s=>s.afkJackpots>=10},
-  {id:'b19',cat:'click',icon:'🌴',zh:{name:'棕欄樹下',desc:'點擊 150 次'},de:{name:'Unter Palmen',desc:'150 Mal klicken'},badge:'bclick',check:s=>s.clicks>=150},
-  {id:'b20',cat:'click',icon:'🎈',zh:{name:'派對開始',desc:'點擊 300 次'},de:{name:'Party-Start',desc:'300 Mal klicken'},badge:'bclick',check:s=>s.clicks>=300},
-  {id:'b21',cat:'click',icon:'🎇',zh:{name:'璀璨煙火',desc:'點擊 750 次'},de:{name:'Glanzfeuerwerk',desc:'750 Mal klicken'},badge:'bclick',check:s=>s.clicks>=750},
-  {id:'b22',cat:'combo',icon:'🌟',zh:{name:'超級效率',desc:'平均每次 $20+（100次後）'},de:{name:'Supereffizienz',desc:'Ø über $20 (nach 100 Klicks)'},badge:'bcombo',check:s=>s.clicks>=100&&s.total/s.clicks>=20},
-  {id:'b23',cat:'jackpot',icon:'💰',zh:{name:'連莊大獎',desc:'連續 3 次大獎'},de:{name:'Jackpot-Runde',desc:'3 Jackpots hintereinander'},badge:'bjackpot',check:s=>s.jackpotStreak>=3},
-  {id:'b24',cat:'streak',icon:'🎺',zh:{name:'三十連奏',desc:'連擊 30 次'},de:{name:'Dreißiger-Serie',desc:'30er-Kombo'},badge:'bstreak',check:s=>s.streak>=30},
-  {id:'b25',cat:'money',icon:'🧸',zh:{name:'紀念存款',desc:'累積 $4,444'},de:{name:'Erinnerungsgeld',desc:'$4.444 gesammelt'},badge:'bmoney',check:s=>s.total>=4444},
-  {id:'b26',cat:'money',icon:'🎻',zh:{name:'音樂夢想',desc:'累積 $8,888'},de:{name:'Musiktraum',desc:'$8.888 gesammelt'},badge:'bmoney',check:s=>s.total>=8888},
-  {id:'b27',cat:'click',icon:'🌙',zh:{name:'夜貓子',desc:'點擊 400 次'},de:{name:'Nachteule',desc:'400 Mal klicken'},badge:'bclick',check:s=>s.clicks>=400},
-  {id:'b28',cat:'special',icon:'🎯',zh:{name:'神射手',desc:'連續 20 次均超過 $5'},de:{name:'Scharfschütze',desc:'20× in Folge über $5'},badge:'bspecial',check:s=>s.fivePlusStreak>=20},
-  {id:'b29',cat:'combo',icon:'🛡️',zh:{name:'穩如磐石',desc:'200 次點擊平均 $10+'},de:{name:'Felsenfest',desc:'Ø $10+ nach 200 Klicks'},badge:'bcombo',check:s=>s.clicks>=200&&s.total/s.clicks>=10},
-  {id:'b30',cat:'jackpot',icon:'🌍',zh:{name:'世界首富',desc:'大獎累積超 $50,000'},de:{name:'Weltreichster',desc:'Jackpots über $50.000'},badge:'bjackpot',check:s=>s.jackpotTotal>=50000},
-  {id:'b31',cat:'money',icon:'🚀',zh:{name:'飛上月球',desc:'累積 $200,000'},de:{name:'Mondflug',desc:'$200.000 gesammelt'},badge:'bmoney',check:s=>s.total>=200000},
-  {id:'b32',cat:'click',icon:'⚙️',zh:{name:'精密機械',desc:'點擊 1,500 次'},de:{name:'Präzisionsmaschine',desc:'1.500 Mal klicken'},badge:'bclick',check:s=>s.clicks>=1500},
-  {id:'b33',cat:'streak',icon:'🌈',zh:{name:'彩虹連擊',desc:'連擊 75 次'},de:{name:'Regenbogen-Kombo',desc:'75er-Kombo'},badge:'bstreak',check:s=>s.streak>=75},
-  {id:'b34',cat:'special',icon:'🎗️',zh:{name:'勳章收藏家',desc:'成就達到 40 個'},de:{name:'Abzeichen-Sammler',desc:'40 Erfolge freigeschaltet'},badge:'bspecial',check:s=>s.unlockedCount>=40},
-  {id:'b35',cat:'money',icon:'🏙️',zh:{name:'城市開發商',desc:'累積 $1,000,000'},de:{name:'Stadtentwickler',desc:'$1.000.000 gesammelt'},badge:'bmoney',check:s=>s.total>=1000000},
-  {id:'b36',cat:'click',icon:'🦾',zh:{name:'機械臂',desc:'點擊 3,000 次'},de:{name:'Roboterarm',desc:'3.000 Mal klicken'},badge:'bclick',check:s=>s.clicks>=3000},
-  {id:'b37',cat:'afk',icon:'🌴',zh:{name:'躺平主義',desc:'完成 20 次掛機'},de:{name:'Faulpelz',desc:'20 AFK abgeschlossen'},badge:'bafk',check:s=>s.afkSessions>=20},
-  {id:'b38',cat:'jackpot',icon:'🎯',zh:{name:'神準大獎',desc:'觸發 200 次大獎'},de:{name:'Jackpot-Gott',desc:'200 Jackpots ausgelöst'},badge:'bjackpot',check:s=>s.jackpots>=200},
-  {id:'b39',cat:'money',icon:'🌐',zh:{name:'全球首富',desc:'累積 $10,000,000'},de:{name:'Globaler Reichster',desc:'$10.000.000 gesammelt'},badge:'bmoney',check:s=>s.total>=10000000},
-  {id:'b40',cat:'special',icon:'🦄',zh:{name:'獨角獸',desc:'成就達到 80 個'},de:{name:'Einhorn',desc:'80 Erfolge freigeschaltet'},badge:'bspecial',check:s=>s.unlockedCount>=80},
+function fmt(n){return '$'+Math.round(n).toLocaleString();}
+function fmtS(s){
+  if(s<60)return s+'秒';
+  const m=Math.floor(s/60),r=s%60;
+  if(s<3600)return m+'分'+(r?r+'秒':'');
+  return Math.floor(s/3600)+'時'+Math.floor((s%3600)/60)+'分';
+}
+function getRand(){
+  const r=Math.random();
+  if(r<0.005)return Math.floor(Math.random()*9001)+1000;
+  if(r<0.05)return Math.floor(Math.random()*451)+50;
+  if(r<0.3)return Math.floor(Math.random()*19)+10;
+  return Math.floor(Math.random()*9)+1;
+}
+
+// ── FLOAT TEXT ─────────────────────────────────────────
+function spawnFloat(el, amt, isJack){
+  const rect = el.getBoundingClientRect();
+  const span = document.createElement('span');
+  span.className = 'float-txt';
+  span.textContent = '+'+fmt(amt);
+  span.style.left = (rect.left + rect.width/2 + (Math.random()-.5)*50 - 25)+'px';
+  span.style.top = (rect.top - 10)+'px';
+  if(isJack){span.style.color='#ff9944';span.style.fontSize='22px';}
+  document.body.appendChild(span);
+  setTimeout(()=>span.remove(), 900);
+}
+
+function showToast(msg, green){
+  const d=document.createElement('div');
+  d.className='toast'+(green?' green':'');
+  d.textContent=msg;
+  document.body.appendChild(d);
+  setTimeout(()=>{d.style.opacity='0';d.style.transition='opacity .3s';setTimeout(()=>d.remove(),300);},2200);
+}
+
+// ── ACHIEVEMENTS DEF ───────────────────────────────────
+const ACHS = [
+  {id:'c1',cat:'click',icon:'🖱️',name:'初次點擊',desc:'點擊第 1 次',b:'bclick',check:s=>s.clicks>=1},
+  {id:'c2',cat:'click',icon:'👆',name:'手感不錯',desc:'點擊 10 次',b:'bclick',check:s=>s.clicks>=10},
+  {id:'c3',cat:'click',icon:'💪',name:'點擊愛好者',desc:'點擊 50 次',b:'bclick',check:s=>s.clicks>=50},
+  {id:'c4',cat:'click',icon:'🔥',name:'百次達人',desc:'點擊 100 次',b:'bclick',check:s=>s.clicks>=100},
+  {id:'c5',cat:'click',icon:'⚡',name:'點擊狂人',desc:'點擊 250 次',b:'bclick',check:s=>s.clicks>=250},
+  {id:'c6',cat:'click',icon:'🌟',name:'閃電手指',desc:'點擊 500 次',b:'bclick',check:s=>s.clicks>=500},
+  {id:'c7',cat:'click',icon:'🚀',name:'千次勇士',desc:'點擊 1000 次',b:'bclick',check:s=>s.clicks>=1000},
+  {id:'c8',cat:'click',icon:'🏅',name:'點擊機器',desc:'點擊 2500 次',b:'bclick',check:s=>s.clicks>=2500},
+  {id:'c9',cat:'click',icon:'👑',name:'五千傳說',desc:'點擊 5000 次',b:'bclick',check:s=>s.clicks>=5000},
+  {id:'c10',cat:'click',icon:'💀',name:'萬次之王',desc:'點擊 10000 次',b:'bclick',check:s=>s.clicks>=10000},
+  {id:'m1',cat:'money',icon:'💵',name:'第一桶金',desc:'累積 $10',b:'bmoney',check:s=>s.total>=10},
+  {id:'m2',cat:'money',icon:'💰',name:'小有積蓄',desc:'累積 $100',b:'bmoney',check:s=>s.total>=100},
+  {id:'m3',cat:'money',icon:'💳',name:'存款達標',desc:'累積 $500',b:'bmoney',check:s=>s.total>=500},
+  {id:'m4',cat:'money',icon:'🏦',name:'千元戶',desc:'累積 $1,000',b:'bmoney',check:s=>s.total>=1000},
+  {id:'m5',cat:'money',icon:'💎',name:'小富翁',desc:'累積 $5,000',b:'bmoney',check:s=>s.total>=5000},
+  {id:'m6',cat:'money',icon:'🤑',name:'萬元大戶',desc:'累積 $10,000',b:'bmoney',check:s=>s.total>=10000},
+  {id:'m7',cat:'money',icon:'🏰',name:'財主',desc:'累積 $50,000',b:'bmoney',check:s=>s.total>=50000},
+  {id:'m8',cat:'money',icon:'🌈',name:'十萬富翁',desc:'累積 $100,000',b:'bmoney',check:s=>s.total>=100000},
+  {id:'m9',cat:'money',icon:'✈️',name:'百萬大亨',desc:'累積 $1,000,000',b:'bmoney',check:s=>s.total>=1000000},
+  {id:'m10',cat:'money',icon:'🛸',name:'億萬傳說',desc:'累積 $100,000,000',b:'bmoney',check:s=>s.total>=100000000},
+  {id:'m11',cat:'money',icon:'🌙',name:'零存整付',desc:'累積 $250',b:'bmoney',check:s=>s.total>=250},
+  {id:'m12',cat:'money',icon:'📈',name:'投資眼光',desc:'累積 $2,500',b:'bmoney',check:s=>s.total>=2500},
+  {id:'m13',cat:'money',icon:'🎯',name:'精準理財',desc:'累積 $7,500',b:'bmoney',check:s=>s.total>=7500},
+  {id:'m14',cat:'money',icon:'🔑',name:'開門鑰匙',desc:'累積 $25,000',b:'bmoney',check:s=>s.total>=25000},
+  {id:'m15',cat:'money',icon:'🏆',name:'財富自由',desc:'累積 $500,000',b:'bmoney',check:s=>s.total>=500000},
+  {id:'j1',cat:'jackpot',icon:'🎰',name:'初見大獎',desc:'獲得第 1 次大獎',b:'bjackpot',check:s=>s.jackpots>=1},
+  {id:'j2',cat:'jackpot',icon:'🎊',name:'雙喜臨門',desc:'獲得 2 次大獎',b:'bjackpot',check:s=>s.jackpots>=2},
+  {id:'j3',cat:'jackpot',icon:'🎁',name:'幸運三星',desc:'獲得 3 次大獎',b:'bjackpot',check:s=>s.jackpots>=3},
+  {id:'j4',cat:'jackpot',icon:'🍀',name:'四葉草運',desc:'獲得 5 次大獎',b:'bjackpot',check:s=>s.jackpots>=5},
+  {id:'j5',cat:'jackpot',icon:'⭐',name:'幸運之星',desc:'獲得 10 次大獎',b:'bjackpot',check:s=>s.jackpots>=10},
+  {id:'j6',cat:'jackpot',icon:'🌟',name:'天選之人',desc:'獲得 20 次大獎',b:'bjackpot',check:s=>s.jackpots>=20},
+  {id:'j7',cat:'jackpot',icon:'💫',name:'財神眷顧',desc:'獲得 50 次大獎',b:'bjackpot',check:s=>s.jackpots>=50},
+  {id:'j8',cat:'jackpot',icon:'🌠',name:'神級運氣',desc:'獲得 100 次大獎',b:'bjackpot',check:s=>s.jackpots>=100},
+  {id:'j9',cat:'jackpot',icon:'👼',name:'超級幸運',desc:'單次獲得 $9,000+',b:'bjackpot',check:s=>s.bestSingle>=9000},
+  {id:'j10',cat:'jackpot',icon:'🎆',name:'完美大獎',desc:'單次獲得 $10,000',b:'bjackpot',check:s=>s.bestSingle>=10000},
+  {id:'s1',cat:'streak',icon:'🔥',name:'連擊開始',desc:'連擊 5 次',b:'bstreak',check:s=>s.streak>=5},
+  {id:'s2',cat:'streak',icon:'💥',name:'十連爆擊',desc:'連擊 10 次',b:'bstreak',check:s=>s.streak>=10},
+  {id:'s3',cat:'streak',icon:'🌋',name:'二十連擊',desc:'連擊 20 次',b:'bstreak',check:s=>s.streak>=20},
+  {id:'s4',cat:'streak',icon:'🌪️',name:'旋風連擊',desc:'連擊 50 次',b:'bstreak',check:s=>s.streak>=50},
+  {id:'s5',cat:'streak',icon:'⚡',name:'百連傳說',desc:'連擊 100 次',b:'bstreak',check:s=>s.streak>=100},
+  {id:'s6',cat:'streak',icon:'🔱',name:'三連好運',desc:'連續 3 次 $50+',b:'bstreak',check:s=>s.bigStreak>=3},
+  {id:'s7',cat:'streak',icon:'👊',name:'五連好彩',desc:'連續 5 次 $50+',b:'bstreak',check:s=>s.bigStreak>=5},
+  {id:'s8',cat:'streak',icon:'🎯',name:'十連大運',desc:'連續 10 次 $50+',b:'bstreak',check:s=>s.bigStreak>=10},
+  {id:'s9',cat:'streak',icon:'🏹',name:'勢如破竹',desc:'連擊 200 次',b:'bstreak',check:s=>s.streak>=200},
+  {id:'s10',cat:'streak',icon:'🎪',name:'永不停息',desc:'連擊 500 次',b:'bstreak',check:s=>s.streak>=500},
+  {id:'sp1',cat:'special',icon:'🌅',name:'早起的鳥',desc:'開始後立即點擊',b:'bspecial',check:s=>s.fastClick},
+  {id:'sp2',cat:'special',icon:'🎂',name:'整整好',desc:'總金額恰好整百',b:'bspecial',check:s=>s.exactHundred},
+  {id:'sp3',cat:'special',icon:'🦥',name:'慢慢來',desc:'30秒後才第2次點擊',b:'bspecial',check:s=>s.slowClick},
+  {id:'sp4',cat:'special',icon:'🎭',name:'身分轉換',desc:'切換成就頁面3次',b:'bspecial',check:s=>s.tabSwitches>=3},
+  {id:'sp5',cat:'special',icon:'🔢',name:'幸運數字',desc:'點擊次數達到777',b:'bspecial',check:s=>s.clicks===777},
+  {id:'sp6',cat:'special',icon:'🎱',name:'撞球時刻',desc:'點擊次數達到8',b:'bspecial',check:s=>s.clicks===8},
+  {id:'sp7',cat:'special',icon:'🐣',name:'新手保護',desc:'前3次點擊均獲$1+',b:'bspecial',check:s=>s.first3done},
+  {id:'sp8',cat:'special',icon:'🎪',name:'翻倍驚喜',desc:'連續兩次大獎',b:'bspecial',check:s=>s.doubleJackpot},
+  {id:'sp9',cat:'special',icon:'🌈',name:'彩虹之夜',desc:'累積金額達$12,345',b:'bspecial',check:s=>s.total>=12345},
+  {id:'sp10',cat:'special',icon:'🔮',name:'神秘數字',desc:'累積金額達$99,999',b:'bspecial',check:s=>s.total>=99999},
+  {id:'sp11',cat:'special',icon:'🎵',name:'節拍點擊',desc:'1秒內點擊3次',b:'bspecial',check:s=>s.rapidClicks>=3},
+  {id:'sp12',cat:'special',icon:'💤',name:'慢動作',desc:'點擊間隔超過60秒',b:'bspecial',check:s=>s.verySlowClick},
+  {id:'sp13',cat:'special',icon:'🏖️',name:'度假模式',desc:'總共重置3次',b:'bspecial',check:s=>s.resets>=3},
+  {id:'sp14',cat:'special',icon:'🎠',name:'旋轉木馬',desc:'查看成就頁10次',b:'bspecial',check:s=>s.tabSwitches>=10},
+  {id:'sp15',cat:'special',icon:'🌊',name:'潮起潮落',desc:'單次獲得$1',b:'bspecial',check:s=>s.gotOneDollar},
+  {id:'co1',cat:'combo',icon:'🎯',name:'幸運組合',desc:'同分鐘內兩次大獎',b:'bcombo',check:s=>s.sameMinuteJackpot>=2},
+  {id:'co2',cat:'combo',icon:'🎰',name:'投幣機',desc:'1分鐘內點擊30次',b:'bcombo',check:s=>s.clicksPerMin>=30},
+  {id:'co3',cat:'combo',icon:'💸',name:'閃電致富',desc:'10次內累積$1000',b:'bcombo',check:s=>s.richIn10},
+  {id:'co4',cat:'combo',icon:'🏎️',name:'極速斂財',desc:'5次內獲得大獎',b:'bcombo',check:s=>s.jackpotIn5},
+  {id:'co5',cat:'combo',icon:'🎆',name:'連環爆',desc:'連續3次$100+',b:'bcombo',check:s=>s.tripleHundred},
+  {id:'co6',cat:'combo',icon:'🌐',name:'全球征服',desc:'平均每次$50+',b:'bcombo',check:s=>s.clicks>0&&s.total/s.clicks>=50},
+  {id:'co7',cat:'combo',icon:'🎳',name:'完全命中',desc:'連續10次皆$10+',b:'bcombo',check:s=>s.tenPlusStreak>=10},
+  {id:'co8',cat:'combo',icon:'🏋️',name:'穩紮穩打',desc:'100次點擊平均$5+',b:'bcombo',check:s=>s.clicks>=100&&s.total/s.clicks>=5},
+  {id:'co9',cat:'combo',icon:'🎡',name:'歡樂遊樂',desc:'一次獲得$5000+',b:'bcombo',check:s=>s.bestSingle>=5000},
+  {id:'co10',cat:'combo',icon:'🎢',name:'驚天逆轉',desc:'前5次$1第6次大獎',b:'bcombo',check:s=>s.sixthJackpot},
+  {id:'b1',cat:'click',icon:'🌱',name:'種下希望',desc:'第5次點擊',b:'bclick',check:s=>s.clicks>=5},
+  {id:'b2',cat:'click',icon:'🌿',name:'嶄露頭角',desc:'第20次點擊',b:'bclick',check:s=>s.clicks>=20},
+  {id:'b3',cat:'money',icon:'🏠',name:'小康之家',desc:'累積$750',b:'bmoney',check:s=>s.total>=750},
+  {id:'b4',cat:'money',icon:'🚗',name:'買車存款',desc:'累積$3,000',b:'bmoney',check:s=>s.total>=3000},
+  {id:'b5',cat:'jackpot',icon:'🌺',name:'意外之財',desc:'$200後獲得大獎',b:'bjackpot',check:s=>s.total>=200&&s.jackpots>=1},
+  {id:'b6',cat:'streak',icon:'🌀',name:'旋風三連',desc:'連擊3次',b:'bstreak',check:s=>s.streak>=3},
+  {id:'b7',cat:'special',icon:'🦋',name:'蛻變時刻',desc:'成就達到10個',b:'bspecial',check:s=>s.unlockedCount>=10},
+  {id:'b8',cat:'special',icon:'🦁',name:'勇敢的心',desc:'成就達到25個',b:'bspecial',check:s=>s.unlockedCount>=25},
+  {id:'b9',cat:'special',icon:'🐉',name:'龍的傳人',desc:'成就達到50個',b:'bspecial',check:s=>s.unlockedCount>=50},
+  {id:'b10',cat:'special',icon:'🌌',name:'宇宙征服者',desc:'成就達到75個',b:'bspecial',check:s=>s.unlockedCount>=75},
+  {id:'b11',cat:'special',icon:'🏆',name:'集大成者',desc:'解鎖全部103個！',b:'bspecial',check:s=>s.unlockedCount>=102},
+  {id:'b12',cat:'money',icon:'🎀',name:'禮物基金',desc:'累積$150',b:'bmoney',check:s=>s.total>=150},
+  {id:'b13',cat:'money',icon:'🍕',name:'披薩基金',desc:'累積$350',b:'bmoney',check:s=>s.total>=350},
+  {id:'b14',cat:'click',icon:'🌻',name:'向陽而生',desc:'點擊75次',b:'bclick',check:s=>s.clicks>=75},
+  {id:'b15',cat:'click',icon:'🌴',name:'棕欄樹下',desc:'點擊150次',b:'bclick',check:s=>s.clicks>=150},
+  {id:'b16',cat:'click',icon:'🎈',name:'派對開始',desc:'點擊300次',b:'bclick',check:s=>s.clicks>=300},
+  {id:'b17',cat:'click',icon:'🎇',name:'璀璨煙火',desc:'點擊750次',b:'bclick',check:s=>s.clicks>=750},
+  {id:'b18',cat:'combo',icon:'🌟',name:'超級效率',desc:'平均每次$20+(100次後)',b:'bcombo',check:s=>s.clicks>=100&&s.total/s.clicks>=20},
+  {id:'b19',cat:'jackpot',icon:'💰',name:'連莊大獎',desc:'連續3次大獎',b:'bjackpot',check:s=>s.jackpotStreak>=3},
+  {id:'b20',cat:'streak',icon:'🎺',name:'三十連奏',desc:'連擊30次',b:'bstreak',check:s=>s.streak>=30},
+  {id:'b21',cat:'money',icon:'🧸',name:'紀念存款',desc:'累積$4,444',b:'bmoney',check:s=>s.total>=4444},
+  {id:'b22',cat:'money',icon:'🎻',name:'音樂夢想',desc:'累積$8,888',b:'bmoney',check:s=>s.total>=8888},
+  {id:'b23',cat:'click',icon:'🌙',name:'夜貓子',desc:'點擊400次',b:'bclick',check:s=>s.clicks>=400},
+  {id:'b24',cat:'special',icon:'🎯',name:'神射手',desc:'連續20次均超過$5',b:'bspecial',check:s=>s.fivePlusStreak>=20},
+  {id:'b25',cat:'combo',icon:'🛡️',name:'穩如磐石',desc:'200次點擊平均$10+',b:'bcombo',check:s=>s.clicks>=200&&s.total/s.clicks>=10},
+  {id:'b26',cat:'jackpot',icon:'🌍',name:'世界首富',desc:'大獎累積超$50,000',b:'bjackpot',check:s=>s.jackpotTotal>=50000},
+  {id:'b27',cat:'money',icon:'🚀',name:'飛上月球',desc:'累積$200,000',b:'bmoney',check:s=>s.total>=200000},
+  {id:'b28',cat:'click',icon:'⚙️',name:'精密機械',desc:'點擊1,500次',b:'bclick',check:s=>s.clicks>=1500},
+  {id:'b29',cat:'streak',icon:'🌈',name:'彩虹連擊',desc:'連擊75次',b:'bstreak',check:s=>s.streak>=75},
+  {id:'b30',cat:'special',icon:'🎗️',name:'勳章收藏家',desc:'成就達到40個',b:'bspecial',check:s=>s.unlockedCount>=40},
+  {id:'a1',cat:'afk',icon:'🤖',name:'首次掛機',desc:'完成第1次掛機',b:'bafk',check:s=>s.afkSessions>=1},
+  {id:'a2',cat:'afk',icon:'⏰',name:'掛機常客',desc:'完成5次掛機',b:'bafk',check:s=>s.afkSessions>=5},
+  {id:'a3',cat:'afk',icon:'🌙',name:'夜班工人',desc:'完成10次掛機',b:'bafk',check:s=>s.afkSessions>=10},
+  {id:'a4',cat:'afk',icon:'⌛',name:'時間管理師',desc:'掛機累積超10分鐘',b:'bafk',check:s=>s.afkTotalSecs>=600},
+  {id:'a5',cat:'afk',icon:'🕐',name:'掛機達人',desc:'掛機累積超1小時',b:'bafk',check:s=>s.afkTotalSecs>=3600},
+  {id:'a6',cat:'afk',icon:'💤',name:'睡著了嗎',desc:'單次掛機超30分鐘',b:'bafk',check:s=>s.afkMaxSession>=1800},
+  {id:'a7',cat:'afk',icon:'🏧',name:'自動提款機',desc:'掛機總收入超$10,000',b:'bafk',check:s=>s.afkTotalEarned>=10000},
+  {id:'a8',cat:'afk',icon:'💰',name:'睡後賺錢',desc:'掛機總收入超$100,000',b:'bafk',check:s=>s.afkTotalEarned>=100000},
+  {id:'a9',cat:'afk',icon:'🎰',name:'掛機大獎',desc:'掛機期間獲得大獎',b:'bafk',check:s=>s.afkJackpots>=1},
+  {id:'a10',cat:'afk',icon:'🎆',name:'掛機連莊',desc:'掛機期間3次以上大獎',b:'bafk',check:s=>s.afkJackpots>=3},
 ];
+const TOTAL = ACHS.length;
 
-const fmt=n=>n>=1e6?(n/1e6).toFixed(1)+'M':n>=1000?(n/1000).toFixed(1)+'K':n;
-let EUR_TWD=36.6, currency='twd', lang='zh', currentFilter='all', currentTab='game';
-let state={total:0,clicks:0,bestSingle:0,jackpots:0,streak:0,tenPlusStreak:0,fivePlusStreak:0,jackpotStreak:0,fastClick:false,exactHundred:false,slowClick:false,verySlowClick:false,tabSwitches:0,gotOneDollar:false,resets:0,sameMinuteJackpot:0,richIn10:false,jackpotIn5:false,jackpotTotal:0,first3done:false,unlockedCount:0,lastJackpotMinute:-1,lastClickTime:0,consecutiveJackpots:0,first3amounts:[],recentClickTimes:[],afkSessions:0,afkTotalSecs:0,afkMaxSession:0,afkTotalEarned:0,afkJackpots:0};
-let history=[],unlocked=new Set();
-let afkTimer=null,afkDuration=1500,afkElapsed=0,afkEarned=0,afkJacks=0;
+// ── LOAD/SAVE ──────────────────────────────────────────
+function saveGame(){
+  try{localStorage.setItem('cg_state',JSON.stringify(G));localStorage.setItem('cg_unlocked',JSON.stringify([...unlocked]));}catch(e){}
+}
+function loadGame(){
+  try{
+    const gs=localStorage.getItem('cg_state');
+    const gu=localStorage.getItem('cg_unlocked');
+    if(gs){const p=JSON.parse(gs);Object.assign(G,p);}
+    if(gu){JSON.parse(gu).forEach(id=>unlocked.add(id));}
+  }catch(e){}
+}
+loadGame();
 
-function t(key){return T[lang][key]||T['zh'][key]||key;}
-
-function setLang(l){
-  lang=l;
-  document.getElementById('lang-zh').classList.toggle('active',l==='zh');
-  document.getElementById('lang-de').classList.toggle('active',l==='de');
-  applyLang();
-  updateStats();
-  renderAchievements();
-  if(currentTab==='history')renderHistory();
+// ── CORE ───────────────────────────────────────────────
+function addAmt(amt, isAfk){
+  const isJack = amt>=1000;
+  G.total+=amt;
+  if(amt>G.bestSingle)G.bestSingle=amt;
+  G.streak++;
+  if(amt>=50)G.bigStreak++;else G.bigStreak=0;
+  if(amt>=10)G.tenPlusStreak++;else G.tenPlusStreak=0;
+  if(amt>=5)G.fivePlusStreak++;else G.fivePlusStreak=0;
+  if(amt===1)G.gotOneDollar=true;
+  const tr=Math.round(G.total);
+  if(tr%100===0&&tr>0)G.exactHundred=true;
+  if(amt>=100)G.hundredStreak++;else G.hundredStreak=0;
+  if(G.hundredStreak>=3)G.tripleHundred=true;
+  const now=Date.now(),min=Math.floor(now/60000);
+  if(isJack){
+    G.jackpots++;G.jackpotTotal+=amt;G.jackpotStreak++;
+    G.consecutiveJackpots++;
+    if(G.consecutiveJackpots>=2)G.doubleJackpot=true;
+    if(min===G.lastJackpotMinute)G.sameMinuteJackpot++;else G.sameMinuteJackpot=1;
+    G.lastJackpotMinute=min;
+    if(!isAfk&&G.clicks<=5)G.jackpotIn5=true;
+    if(isAfk){G.afkJackpots++;afkJacks++;}
+  }else{G.jackpotStreak=0;G.consecutiveJackpots=0;}
+  history.unshift({amount:amt,time:new Date().toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit',second:'2-digit'}),src:isAfk?'掛機':'點擊'});
+  if(history.length>60)history.pop();
+  return isJack;
 }
 
-function applyLang(){
-  const L=T[lang];
-  document.getElementById('lbl-total').textContent=L.total;
-  document.getElementById('lbl-clicks').textContent=L.clicks;
-  document.getElementById('lbl-ach').textContent=L.ach;
-  document.getElementById('lbl-best').textContent=L.best;
-  document.getElementById('tab-game').textContent=L.tabGame;
-  document.getElementById('tab-afk').textContent=L.tabAfk;
-  document.getElementById('tab-achievements').textContent=L.tabAch;
-  document.getElementById('tab-history').textContent=L.tabHist;
-  document.getElementById('coin-hint').textContent=L.coinHint;
-  document.getElementById('jackpot-banner').textContent=L.jackpot;
-  document.getElementById('lbl-exchange').textContent=L.exchange;
-  document.getElementById('reset-btn').textContent=L.reset;
-  document.getElementById('lbl-afk-title').textContent=L.afkTitle;
-  document.getElementById('lbl-min').textContent=L.min;
-  document.getElementById('lbl-hr').textContent=L.hr;
-  document.getElementById('lbl-custom').textContent=L.custom;
-  document.getElementById('lbl-dur0-sub').textContent=L.dur0sub;
-  document.getElementById('lbl-dur1-sub').textContent=L.dur1sub;
-  document.getElementById('lbl-dur2-sub').textContent=L.dur2sub;
-  document.getElementById('lbl-duration').textContent=L.duration;
-  let btn=document.getElementById('afk-start-btn');
-  if(!afkTimer)btn.textContent=L.startAfk;
-  renderAchFilters();
-  updateCustomLabel();
-  updateExchange();
-}
-
-function setCurrency(c){
-  currency=c;
-  document.getElementById('btn-twd').classList.toggle('active',c==='twd');
-  document.getElementById('btn-eur').classList.toggle('active',c==='eur');
-  updateExchange();
-}
-
-function updateExchange(){
-  const L=T[lang];
-  const twd=state.total/100000;
-  const eur=twd/EUR_TWD;
-  if(currency==='twd'){
-    document.getElementById('ex-flag').textContent='🇹🇼';
-    document.getElementById('ex-amount').textContent='NT$'+Math.floor(twd);
-    document.getElementById('ex-sub').textContent=L.exSubTwd+'  |  '+L.exRate.replace('{r}',EUR_TWD.toFixed(2));
-  } else {
-    document.getElementById('ex-flag').textContent='🇪🇺';
-    document.getElementById('ex-amount').textContent='€'+(eur<0.01?eur.toFixed(5):eur<1?eur.toFixed(4):eur.toFixed(2));
-    document.getElementById('ex-sub').textContent=L.exSubEur.replace('{r}',(1/EUR_TWD).toFixed(4))+'  |  '+L.exRate.replace('{r}',EUR_TWD.toFixed(2));
-  }
+function checkAch(){
+  G.unlockedCount=unlocked.size;
+  let news=[];
+  ACHS.forEach(a=>{if(!unlocked.has(a.id)&&a.check(G)){unlocked.add(a.id);news.push(a);}});
+  G.unlockedCount=unlocked.size;
+  news.forEach(a=>showToast(a.icon+' 成就解鎖：'+a.name));
+  document.getElementById('s-ach').textContent=unlocked.size+'/'+TOTAL;
+  if(currentTab==='ach')renderAch();
 }
 
 function updateStats(){
-  document.getElementById('total').textContent='$'+fmt(state.total);
-  document.getElementById('clicks').textContent=state.clicks;
-  document.getElementById('ach-count').textContent=unlocked.size+'/103';
-  document.getElementById('best').textContent='$'+fmt(state.bestSingle);
-  updateExchange();
+  document.getElementById('s-total').textContent=fmt(G.total);
+  document.getElementById('s-clicks').textContent=G.clicks.toLocaleString();
+  document.getElementById('s-ach').textContent=unlocked.size+'/'+TOTAL;
+  document.getElementById('s-twd').textContent='NT$'+G.twdTotal.toLocaleString();
+  if(currentTab==='exchange')updateExPanel();
 }
 
-async function fetchRate(){
-  try{
-    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:60,messages:[{role:'user',content:'Reply ONLY with JSON {"rate":36.6} where rate is current EUR/TWD exchange rate.'}]})});
-    const d=await r.json();
-    const m=d.content[0].text.match(/\{[^}]+\}/);
-    if(m){const j=JSON.parse(m[0]);if(j.rate>30&&j.rate<50){EUR_TWD=j.rate;updateStats();}}
-  }catch(e){}
-}
-
-function doClick(isAfk=false,x=0,y=0){
-  let amount,r=Math.random();
-  if(r<0.01)amount=Math.floor(Math.random()*9001)+1000;
-  else if(r<0.08)amount=Math.floor(Math.random()*91)+50;
-  else if(r<0.35)amount=Math.floor(Math.random()*19)+10;
-  else amount=Math.floor(Math.random()*8)+1;
-  state.total+=amount;state.clicks++;
-  if(amount>state.bestSingle)state.bestSingle=amount;
-  if(amount===1)state.gotOneDollar=true;
-  if(amount===100)state.exactHundred=true;
-  if(state.clicks<=3){state.first3amounts.push(amount);if(state.clicks===3)state.first3done=true;}
-  if(state.clicks<=10&&state.total>=500)state.richIn10=true;
-  if(state.clicks<=5&&amount>=1000)state.jackpotIn5=true;
-  let now=Date.now();
-  if(state.lastClickTime>0){let gap=(now-state.lastClickTime)/1000;if(gap>30)state.slowClick=true;if(gap>120)state.verySlowClick=true;}
-  state.recentClickTimes.push(now);state.recentClickTimes=state.recentClickTimes.filter(t=>now-t<3000);
-  if(state.recentClickTimes.length>=5)state.fastClick=true;
-  state.lastClickTime=now;
-  let isJackpot=amount>=1000;
-  if(isJackpot){
-    state.jackpots++;state.jackpotTotal+=amount;state.jackpotStreak++;state.consecutiveJackpots++;
-    if(isAfk)state.afkJackpots++;
-    let min=Math.floor(Date.now()/60000);
-    if(min===state.lastJackpotMinute)state.sameMinuteJackpot++;else{state.sameMinuteJackpot=1;state.lastJackpotMinute=min;}
-    let banner=document.getElementById('jackpot-banner');banner.style.display='block';setTimeout(()=>banner.style.display='none',1500);
-  }else{state.jackpotStreak=0;state.consecutiveJackpots=0;}
-  if(amount>=1)state.streak++;else state.streak=0;
-  if(amount>=5)state.fivePlusStreak++;else state.fivePlusStreak=0;
-  if(amount>=10)state.tenPlusStreak++;else state.tenPlusStreak=0;
-  if(!isAfk&&x&&y){
-    let el=document.createElement('div');el.className='float-text';el.style.left=x+'px';el.style.top=y+'px';
-    el.textContent='+$'+amount+(isJackpot?' 🎉':'');document.body.appendChild(el);setTimeout(()=>el.remove(),900);
-    let combo=document.getElementById('combo-display');
-    combo.textContent=state.streak>=5?T[lang].combo.replace('{n}',state.streak):'';
+// ── CLICK ──────────────────────────────────────────────
+document.getElementById('coin-btn').addEventListener('click', function(e){
+  const now=Date.now(), amt=getRand();
+  G.clicks++;
+  if(G.clicks===1)G.fastClick=true;
+  if(G.clicks===2&&G.lastClickTime>0&&(now-G.lastClickTime)>30000)G.slowClick=true;
+  if(G.lastClickTime>0&&(now-G.lastClickTime)>60000)G.verySlowClick=true;
+  G.recentClickTimes=G.recentClickTimes.filter(t=>now-t<1000);
+  G.recentClickTimes.push(now);
+  if(G.recentClickTimes.length>G.rapidClicks)G.rapidClicks=G.recentClickTimes.length;
+  if(G.minClickStart===0)G.minClickStart=now;
+  const el=(now-G.minClickStart)/60000;
+  if(el<=1)G.minClickCount++;else{G.minClickStart=now;G.minClickCount=1;}
+  if(G.minClickCount>G.clicksPerMin)G.clicksPerMin=G.minClickCount;
+  if(G.clicks<=3)G.first3amounts.push(amt);
+  if(G.first3amounts.length===3)G.first3done=true;
+  if(!G.sixthCheck&&G.clicks===6&&G.first3amounts.length>=5){
+    if(G.first3amounts.slice(0,5).every(v=>v===1)&&amt>=1000)G.sixthJackpot=true;
+    G.sixthCheck=true;
   }
-  history.unshift({amount,time:new Date().toLocaleTimeString(lang==='de'?'de-DE':'zh-TW',{hour:'2-digit',minute:'2-digit',second:'2-digit'}),src:isAfk?T[lang].afkSrc:'click'});
-  if(history.length>50)history.pop();
-  if(isAfk){afkEarned+=amount;if(isJackpot)afkJacks++;}
-  checkAchievements();updateStats();
-  if(currentTab==='history')renderHistory();
-}
-
-document.getElementById('coin-btn').addEventListener('click',e=>{
-  let r=e.target.getBoundingClientRect();doClick(false,r.left+r.width/2-20,r.top-10);
+  if(G.clicks<=10){let s=history.slice(0,9).reduce((a,h)=>a+h.amount,0)+amt;if(s>=1000)G.richIn10=true;}
+  const isJack=addAmt(amt,false);
+  G.lastClickTime=now;
+  spawnFloat(this,amt,isJack);
+  if(isJack){
+    const b=document.getElementById('jackpot-banner');
+    b.style.display='block';clearTimeout(b._t);
+    b._t=setTimeout(()=>b.style.display='none',2000);
+  }
+  updateStats();checkAch();
+  document.getElementById('combo-bar').textContent=G.streak>=10?'🔥 連擊 '+G.streak+' 次！':'';
+  renderMiniHistory();
+  if(currentTab==='hist')renderHist();
+  saveGame();
 });
 
-function checkAchievements(){
-  achievements.forEach(a=>{
-    if(!unlocked.has(a.id)&&a.check(state)){
-      unlocked.add(a.id);state.unlockedCount=unlocked.size;
-      let nm=a[lang]?a[lang].name:a.zh.name;
-      let t2=document.createElement('div');t2.className='new-ach-toast';
-      t2.textContent='🏆 '+nm+(lang==='zh'?' 解鎖！':' freigeschaltet!');
-      document.body.appendChild(t2);setTimeout(()=>t2.remove(),3000);
-      if(currentTab==='achievements')renderAchievements();
-    }
-  });
-}
-
-function renderAchFilters(){
-  const cats=T[lang].cats;
-  document.getElementById('ach-filters').innerHTML=Object.entries(cats).map(([k,v])=>
-    `<button class="ach-filter ${currentFilter===k?'active':''}" onclick="setFilter('${k}')">${v}</button>`
-  ).join('');
-}
-
-function renderAchievements(){
-  renderAchFilters();
-  const achCats=T[lang].achCats;
-  let list=currentFilter==='all'?achievements:achievements.filter(a=>a.cat===currentFilter);
-  document.getElementById('ach-grid').innerHTML=list.map(a=>{
-    let nm=a[lang]?a[lang].name:a.zh.name;
-    let desc=a[lang]?a[lang].desc:a.zh.desc;
-    return `<div class="ach-item ${unlocked.has(a.id)?'unlocked':'locked'}">
-      <div class="ach-icon">${a.icon}</div>
-      <div class="ach-name">${nm}</div>
-      <div class="ach-desc">${desc}</div>
-      <span class="ach-badge ${a.badge}">${achCats[a.cat]||a.cat}</span>
-    </div>`;
+function renderMiniHistory(){
+  document.getElementById('mini-history').innerHTML=history.slice(0,5).map(h=>{
+    let cls=h.amount>=1000?'jp':h.amount>=50?'big':'';
+    let lbl=h.amount>=1000?'🎉':h.amount>=50?'✨':'·';
+    return `<div class="mini-hist-item"><span>${lbl} ${h.time}</span><span class="mh-amt ${cls}">${fmt(h.amount)}</span></div>`;
   }).join('');
 }
 
-function setFilter(f){
-  currentFilter=f;renderAchievements();
+// ── AFK ────────────────────────────────────────────────
+function selPreset(idx,val){
+  selPresetIdx=idx;
+  [0,1,2].forEach(i=>document.getElementById('dur-'+i).classList.toggle('sel',i===idx));
+  const cr=document.getElementById('custom-row');
+  if(val===-1){cr.style.display='flex';afkDuration=parseInt(document.getElementById('custom-dur').value);}
+  else{cr.style.display='none';afkDuration=val;}
+}
+function updateCustomLbl(){
+  const v=parseInt(document.getElementById('custom-dur').value);
+  document.getElementById('custom-lbl').textContent=fmtS(v);
+  if(selPresetIdx===2)afkDuration=v;
+}
+function toggleAfk(){if(afkTimer){stopAfk();return;}startAfk();}
+function startAfk(){
+  afkElapsed=0;afkEarned=0;afkJacks=0;afkLog=[];
+  document.getElementById('result-card').style.display='none';
+  document.getElementById('afk-prog-wrap').style.display='block';
+  document.getElementById('afk-btn').textContent='⏹ 停止掛機';
+  document.getElementById('afk-btn').classList.add('running');
+  afkTimer=setInterval(afkTick,1000);
+}
+function afkTick(){
+  afkElapsed++;
+  const amt=getRand(), isJack=addAmt(amt,true);
+  afkEarned+=amt;G.afkTotalEarned+=amt;
+  afkLog.unshift({amt,isJack,t:afkElapsed});
+  if(afkLog.length>20)afkLog.pop();
+  updateStats();checkAch();updateAfkUI();
+  if(currentTab==='hist')renderHist();
+  if(afkElapsed>=afkDuration)finishAfk();
+  saveGame();
+}
+function updateAfkUI(){
+  const pct=Math.min(100,Math.round(afkElapsed/afkDuration*100));
+  document.getElementById('prog-fill').style.width=pct+'%';
+  document.getElementById('afk-left').textContent='剩餘 '+fmtS(Math.max(0,afkDuration-afkElapsed));
+  document.getElementById('afk-status').textContent='掛機中… '+pct+'%';
+  document.getElementById('afk-earn').textContent=fmt(afkEarned);
+  document.getElementById('afk-el').textContent=fmtS(afkElapsed);
+  document.getElementById('afk-jk').textContent=afkJacks;
+  document.getElementById('afk-log').innerHTML=afkLog.slice(0,6).map(l=>`<div class="afk-log-row"><span>${fmtS(l.t)} ${l.isJack?'🎉':l.amt>=50?'✨':''}</span><span class="la ${l.isJack?'jp':l.amt>=50?'big':''}">${fmt(l.amt)}</span></div>`).join('');
+}
+function stopAfk(){if(!afkTimer)return;clearInterval(afkTimer);afkTimer=null;finalizeAfk();}
+function finishAfk(){clearInterval(afkTimer);afkTimer=null;finalizeAfk();}
+function finalizeAfk(){
+  G.afkSessions++;G.afkTotalSecs+=afkElapsed;
+  if(afkElapsed>G.afkMaxSession)G.afkMaxSession=afkElapsed;
+  document.getElementById('afk-btn').textContent='▶ 開始掛機';
+  document.getElementById('afk-btn').classList.remove('running');
+  document.getElementById('prog-fill').style.width='100%';
+  document.getElementById('afk-left').textContent='已完成';
+  document.getElementById('afk-status').textContent='掛機結束！';
+  document.getElementById('res-earn').textContent=fmt(afkEarned);
+  document.getElementById('res-ticks').textContent=afkElapsed;
+  document.getElementById('res-jk').textContent=afkJacks;
+  document.getElementById('result-card').style.display='block';
+  checkAch();updateStats();saveGame();
 }
 
-function updateCustomLabel(){
-  let v=parseInt(document.getElementById('custom-dur').value);
-  let m=Math.floor(v/60),s=v%60;
-  let L=T[lang];
-  document.getElementById('custom-dur-label').textContent=m>0?m+' '+L.min+(s>0?' '+s+'s':''):v+'s';
+// ── EXCHANGE ───────────────────────────────────────────
+function updateExPanel(){
+  const conv=Math.floor(G.total/RATE);
+  document.getElementById('ex-balance').textContent=fmt(G.total);
+  document.getElementById('ex-conv').textContent='NT$'+conv.toLocaleString();
+  document.getElementById('twd-total').textContent='NT$'+G.twdTotal.toLocaleString();
+  updateExPrev();
+}
+function updateExPrev(){
+  const val=parseInt(document.getElementById('ex-input').value)||0;
+  const max=Math.floor(G.total/RATE);
+  const btn=document.getElementById('ex-btn');
+  const prev=document.getElementById('ex-prev');
+  if(val<=0){prev.textContent='請輸入兌換數量';btn.disabled=true;return;}
+  if(val>max){prev.innerHTML=`金額不足，最多可兌換 <span>NT$${max.toLocaleString()}</span>`;btn.disabled=true;return;}
+  prev.innerHTML=`花費 <span>${fmt(val*RATE)}</span> → 獲得 <span>NT$${val.toLocaleString()}</span>`;
+  btn.disabled=false;
+}
+function exMax(){
+  document.getElementById('ex-input').value=Math.floor(G.total/RATE);
+  updateExPrev();
+}
+function doExchange(){
+  const val=parseInt(document.getElementById('ex-input').value)||0;
+  const max=Math.floor(G.total/RATE);
+  if(val<=0||val>max)return;
+  const cost=val*RATE;
+  G.total-=cost;G.twdTotal+=val;
+  exHistory.unshift({twd:val,cost,time:new Date().toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit',second:'2-digit'})});
+  document.getElementById('ex-input').value='';
+  updateStats();updateExPanel();renderExHist();
+  showToast('💱 兌換成功！獲得 NT$'+val.toLocaleString(), true);
+  saveGame();
+}
+function renderExHist(){
+  if(!exHistory.length){document.getElementById('ex-hist').style.display='none';return;}
+  document.getElementById('ex-hist').style.display='block';
+  document.getElementById('ex-hist-list').innerHTML=exHistory.slice(0,10).map(h=>`<div class="ex-hist-row"><span>${h.time} — ${fmt(h.cost)}</span><span class="eha">+NT$${h.twd.toLocaleString()}</span></div>`).join('');
 }
 
-function selectPreset(idx,secs){
-  [0,1,2].forEach(i=>document.getElementById('dur-'+i).classList.toggle('selected',i===idx));
-  document.getElementById('custom-row').style.display=idx===2?'flex':'none';
-  if(secs>0)afkDuration=secs;else afkDuration=parseInt(document.getElementById('custom-dur').value);
-}
-document.getElementById('custom-dur').addEventListener('input',function(){
-  afkDuration=parseInt(this.value);updateCustomLabel();
-});
-
-function toggleAfk(){
-  const L=T[lang];
-  if(afkTimer){
-    clearInterval(afkTimer);afkTimer=null;
-    let btn=document.getElementById('afk-start-btn');btn.textContent=L.startAfk;btn.classList.remove('running');
-    document.getElementById('afk-progress-wrap').style.display='none';showAfkResult();return;
-  }
-  afkElapsed=0;afkEarned=0;afkJacks=0;
-  document.getElementById('afk-result').style.display='none';document.getElementById('afk-log').innerHTML='';
-  let btn=document.getElementById('afk-start-btn');btn.textContent=L.stopAfk;btn.classList.add('running');
-  document.getElementById('afk-progress-wrap').style.display='block';document.getElementById('afk-bar').style.width='0%';
-  afkTimer=setInterval(()=>{
-    afkElapsed++;
-    let pct=Math.min(100,Math.round(afkElapsed/afkDuration*100));
-    document.getElementById('afk-bar').style.width=pct+'%';document.getElementById('afk-progress-pct').textContent=pct+'%';
-    let rem=afkDuration-afkElapsed,h=Math.floor(rem/3600),m=Math.floor((rem%3600)/60),s=rem%60;
-    document.getElementById('afk-progress-text').textContent=T[lang].afkRunning+(h>0?h+'h ':'')+m+'m '+s+'s';
-    doClick(true);
-    let lastAmt=history[0]?.amount;
-    let logEl=document.getElementById('afk-log');
-    let item=document.createElement('div');item.className='afk-log-item';
-    item.textContent=new Date().toLocaleTimeString(lang==='de'?'de-DE':'zh-TW',{hour:'2-digit',minute:'2-digit',second:'2-digit'})+' +$'+lastAmt+(lastAmt>=1000?' 🎉':'');
-    logEl.insertBefore(item,logEl.firstChild);if(logEl.children.length>20)logEl.removeChild(logEl.lastChild);
-    if(afkElapsed>=afkDuration){clearInterval(afkTimer);afkTimer=null;btn.textContent=T[lang].startAfk;btn.classList.remove('running');showAfkResult();}
-  },1000);
-}
-
-function showAfkResult(){
-  state.afkSessions++;state.afkTotalSecs+=afkElapsed;state.afkTotalEarned+=afkEarned;
-  if(afkEarned>state.afkMaxSession)state.afkMaxSession=afkEarned;
-  let el=document.getElementById('afk-result');el.style.display='block';
-  let L=T[lang];
-  el.textContent=L.afkDone.replace('{s}',afkElapsed).replace('{e}',fmt(afkEarned))+(afkJacks>0?L.afkJacks.replace('{n}',afkJacks):'');
-  checkAchievements();updateStats();
-}
-
-function renderHistory(){
-  const L=T[lang];
-  document.getElementById('history-list').innerHTML=history.slice(0,30).map(h=>{
-    let cls=h.amount>=1000?'jackpot':h.amount>=50?'big':'';
-    let label=h.amount>=1000?L.jackpotLabel:h.amount>=50?L.lucky:L.normal;
-    let src=h.src!=='click'?`<span style="font-size:10px;background:var(--color-background-success);color:var(--color-text-success);padding:1px 5px;border-radius:4px;margin-right:4px;">${h.src}</span>`:'';
-    return `<div class="history-item"><span>${src}${h.time} — ${label}</span><span class="amt ${cls}">$${fmt(h.amount)}</span></div>`;
-  }).join('');
-}
-
+// ── TAB SWITCH ─────────────────────────────────────────
 function switchTab(tab){
-  currentTab=tab;state.tabSwitches++;
-  document.querySelectorAll('.tab').forEach((b,i)=>b.classList.toggle('active',['game','afk','achievements','history'][i]===tab));
-  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('show'));
-  document.getElementById('panel-'+tab).classList.add('show');
-  if(tab==='achievements')renderAchievements();
-  if(tab==='history')renderHistory();
+  currentTab=tab;
+  const names=['game','afk','exchange','ach','hist'];
+  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',names[i]===tab));
+  names.forEach(n=>document.getElementById('panel-'+n).classList.toggle('show',n===tab));
+  if(tab==='ach'){G.tabSwitches++;renderAch();checkAch();}
+  if(tab==='hist')renderHist();
+  if(tab==='exchange'){updateExPanel();renderExHist();}
 }
 
+// ── RENDER ACHIEVEMENTS ────────────────────────────────
+function renderAch(){
+  const cats=['all','click','money','jackpot','streak','special','combo','afk'];
+  const cn={all:'全部',click:'點擊',money:'金錢',jackpot:'大獎',streak:'連擊',special:'特殊',combo:'組合',afk:'掛機'};
+  document.getElementById('ach-filters').innerHTML=cats.map(c=>`<button class="af-btn${currentFilter===c?' active':''}" onclick="setFilter('${c}')">${cn[c]}</button>`).join('');
+  const list=ACHS.filter(a=>currentFilter==='all'||a.cat===currentFilter);
+  document.getElementById('ach-prog').textContent=`已解鎖 ${unlocked.size} / ${TOTAL} 個成就`;
+  const cl={click:'點擊',money:'金錢',jackpot:'大獎',streak:'連擊',special:'特殊',combo:'組合',afk:'掛機'};
+  document.getElementById('ach-grid').innerHTML=list.map(a=>{
+    const u=unlocked.has(a.id);
+    return `<div class="ach-card ${u?'unlocked':'locked'}"><div class="ai">${a.icon}</div><div class="an">${a.name}</div><div class="ad">${a.desc}</div><span class="ab ${a.b}">${cl[a.cat]}</span></div>`;
+  }).join('');
+}
+function setFilter(f){currentFilter=f;renderAch();}
+
+// ── RENDER HISTORY ─────────────────────────────────────
+function renderHist(){
+  document.getElementById('hist-list').innerHTML=history.slice(0,40).map(h=>{
+    let cls=h.amount>=1000?'jp':h.amount>=50?'big':'';
+    let lbl=h.amount>=1000?'🎉 大獎':h.amount>=50?'✨ 好運':'普通';
+    let tag=h.src==='掛機'?'<span class="hist-tag">掛機</span>':'';
+    return `<div class="hist-row"><span>${tag}${h.time} — ${lbl}</span><span class="hist-amt ${cls}">${fmt(h.amount)}</span></div>`;
+  }).join('');
+}
+
+// ── RESET ──────────────────────────────────────────────
 function resetGame(){
   if(afkTimer){clearInterval(afkTimer);afkTimer=null;}
-  state={total:0,clicks:0,bestSingle:0,jackpots:0,streak:0,tenPlusStreak:0,fivePlusStreak:0,jackpotStreak:0,fastClick:false,exactHundred:false,slowClick:false,verySlowClick:false,tabSwitches:0,gotOneDollar:false,resets:(state.resets||0)+1,sameMinuteJackpot:0,richIn10:false,jackpotIn5:false,jackpotTotal:0,first3done:false,unlockedCount:0,lastJackpotMinute:-1,lastClickTime:0,consecutiveJackpots:0,first3amounts:[],recentClickTimes:[],afkSessions:0,afkTotalSecs:0,afkMaxSession:0,afkTotalEarned:0,afkJackpots:0};
-  history=[];unlocked.clear();afkEarned=0;afkJacks=0;afkElapsed=0;
+  const rs=(G.resets||0)+1;
+  G={total:0,clicks:0,bestSingle:0,jackpots:0,streak:0,bigStreak:0,tenPlusStreak:0,fivePlusStreak:0,jackpotStreak:0,fastClick:false,exactHundred:false,slowClick:false,verySlowClick:false,tabSwitches:0,doubleJackpot:false,gotOneDollar:false,rapidClicks:0,resets:rs,sameMinuteJackpot:0,clicksPerMin:0,richIn10:false,jackpotIn5:false,tripleHundred:false,sixthJackpot:false,jackpotTotal:0,first3done:false,unlockedCount:0,lastJackpotMinute:-1,lastClickTime:0,consecutiveJackpots:0,first3amounts:[],sixthCheck:false,hundredStreak:0,recentClickTimes:[],minClickCount:0,minClickStart:0,afkSessions:0,afkTotalSecs:0,afkMaxSession:0,afkTotalEarned:0,afkJackpots:0,twdTotal:0};
+  history=[];exHistory=[];unlocked.clear();afkLog=[];afkEarned=0;afkJacks=0;afkElapsed=0;
+  updateStats();renderMiniHistory();
   document.getElementById('jackpot-banner').style.display='none';
-  document.getElementById('combo-display').textContent='';
-  document.getElementById('afk-progress-wrap').style.display='none';
-  document.getElementById('afk-result').style.display='none';
-  document.getElementById('afk-start-btn').textContent=T[lang].startAfk;
-  document.getElementById('afk-start-btn').classList.remove('running');
-  document.getElementById('afk-log').innerHTML='';
-  if(currentTab==='history')renderHistory();
-  if(currentTab==='achievements')renderAchievements();
-  updateStats();
+  document.getElementById('combo-bar').textContent='';
+  document.getElementById('afk-prog-wrap').style.display='none';
+  document.getElementById('result-card').style.display='none';
+  document.getElementById('afk-btn').textContent='▶ 開始掛機';
+  document.getElementById('afk-btn').classList.remove('running');
+  document.getElementById('ex-input').value='';
+  document.getElementById('ex-hist').style.display='none';
+  if(currentTab==='ach')renderAch();
+  if(currentTab==='hist')renderHist();
+  if(currentTab==='exchange')updateExPanel();
+  saveGame();
 }
 
-applyLang();
+// ── INIT ───────────────────────────────────────────────
 updateStats();
-renderAchievements();
-fetchRate();
+renderMiniHistory();
+renderAch();
+
+// ── PWA INSTALL ────────────────────────────────────────
+let deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  document.getElementById('install-banner').classList.add('show');
+});
+document.getElementById('install-btn').addEventListener('click', async () => {
+  if(!deferredPrompt) return;
+  deferredPrompt.prompt();
+  const {outcome} = await deferredPrompt.userChoice;
+  deferredPrompt = null;
+  document.getElementById('install-banner').classList.remove('show');
+});
+window.addEventListener('appinstalled', () => {
+  document.getElementById('install-banner').classList.remove('show');
+});
+
+// ── SERVICE WORKER ─────────────────────────────────────
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('./sw.js').catch(()=>{});
+}
 </script>
+</body>
+</html>
